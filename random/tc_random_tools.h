@@ -1,4 +1,7 @@
 /*
+ const uint32_t rng_seed_ = 0;
+ TCRandom<TC_MCG_Lehmer_RandFunc32> rng_(rng_seed_);
+ 
  //===================================//
  //=== Measure performance of RNGs ===//
  //===================================//
@@ -8,19 +11,22 @@
  
  const uint64_t num_iterations = uint64_t(1)<<32;
  uint64_t t=0,f=0;
- 
- uint32_t r = 0;
+ uint32_t ri = 0;
+ double rf = 0.0;
  
  for (uint64_t i=0; i <= num_iterations; ++i)
  {
- r += rng_.next(i & 255);
- //t+=r&1;
- //f+=!(r&1);
+ ri += rng_.next();
+ //ri = rng_.next();
+ //rf += rng_.next_double();
+ //t+=ri&1;
+ //f+=!(ri&1);
  }
  
  const double end_time = TCTimer::get_tsc_time();
  
- DBN(r)
+ DBN(ri)
+ DBN(rf/num_iterations)
  DBN(t/double(f))
  DBN((end_time-start_time) * 1000000000.0 / num_iterations)
  
