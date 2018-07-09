@@ -74,13 +74,13 @@ public:
         return core_;
     }
     
+private:
     /*!Return the number of clock ticks since some past event - a modern constant_tsc and nonstop_tsc CPU is assumed.
      @remark The TSC is incremented by the base multiplier once every reference clock. In other words, the same value could be returned multiple times!
      */
     static ALWAYS_INLINE uint64_t get_tsc_tick() noexcept
     {
-        //#ifdef __x86_64
-        uint64_t timelo, timehi;
+        register uint64_t timelo, timehi;
         __asm__ volatile ("rdtsc" : "=a" (timelo), "=d" (timehi));
         return (timehi << 32) | timelo;
         //OR
@@ -90,15 +90,14 @@ public:
     //!Return the number of TSC ticks since some past event. Under Linux the additional values returned by rdtscp contains the chip and core that the instruction executed on.
     static ALWAYS_INLINE uint64_t get_tsc_tick_p(int &chip, int &core) noexcept
     {
-        uint64_t timelo, timehi;
-        uint32_t chx;
+        register uint64_t timelo, timehi;
+        register uint32_t chx;
         __asm__ volatile("rdtscp" : "=a" (timelo), "=d" (timehi), "=c" (chx));
         chip = (chx & 0xFFF000)>>12;
         core = (chx & 0xFFF);
         return (timehi << 32) | timelo;
     }
     
-private:
     //!Return the number of seconds since some past event. Based on gettimeofday() - 130000ns on TC's EC2! Local performance = 30ns.
     static ALWAYS_INLINE double get_tod_seconds() noexcept
     {
