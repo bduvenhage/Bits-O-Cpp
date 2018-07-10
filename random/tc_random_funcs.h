@@ -4,8 +4,8 @@
 //=== TC RNGs ========//
 //====================//
 //! Stateless [0,2^64) splitmix64 by Daniel Lemire https://github.com/lemire/testingRNG
-ALWAYS_INLINE uint64_t splitmix64_stateless(const uint32_t index) noexcept { //??ns on TC's EC2! 1.3 ns on local.
-    uint64_t z = ((uint64_t(index)+1) * UINT64_C(0x9E3779B97F4A7C15));
+ALWAYS_INLINE uint64_t splitmix64_stateless(const uint64_t index) noexcept { //??ns on TC's EC2! 1.3 ns on local.
+    uint64_t z = index + UINT64_C(0x9E3779B97F4A7C15);
     z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
     z = (z ^ (z >> 27)) * UINT64_C(0x94D049BB133111EB);
     return z ^ (z >> 31);

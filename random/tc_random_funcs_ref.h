@@ -82,7 +82,7 @@ public:
         state_ ^= state_ >> 11;
         state_ ^= state_ << 31;
         state_ ^= state_ >> 18;
-        return result >> 32ull;
+        return result >> 32;
     }
     
     void init(const uint32_t seed) {state_ = splitmix64_stateless(seed);}
