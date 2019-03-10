@@ -55,4 +55,3 @@ namespace platform_info {
         return compiler_info;
     }
 }
-
