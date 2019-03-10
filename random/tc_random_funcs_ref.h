@@ -100,8 +100,8 @@ public:
     TC_MT32_RandFunc32(const uint32_t seed = 0) {init(seed);}
     
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 3.2 ns on local.
-        if (index_ == 0) generate();
-            uint32_t y = MT_[index_];
+        if (index_ == 0) {generate();}        
+        uint32_t y = MT_[index_];
         y ^= y >> 11; y ^= (y << 7)  & 2636928640UL; y ^= (y << 15) & 4022730752UL; y ^= y >> 18;
         index_ = (index_ == 623) ? 0 : (index_ + 1);
         return y;
