@@ -1,4 +1,5 @@
-
+#ifndef TC_RANDOM_FUNCS_H
+#define TC_RANDOM_FUNCS_H 1
 
 //====================//
 //=== TC RNGs ========//
@@ -51,7 +52,7 @@ public:
         uint64_t z = (state_ += UINT64_C(0x9E3779B97F4A7C15));
         z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
         z = (z ^ (z >> 27)) * UINT64_C(0x94D049BB133111EB);
-        return (z ^ (z >> 31)) >> 31;
+        return (z ^ (z >> 31)) >> 31; //ToDo: Test if it will be faster if last shift is 32 instead of 31.
     }
     
     void init(const uint32_t seed) {state_ = splitmix64_stateless(seed);}
@@ -64,7 +65,6 @@ private:
 };
 
 //======
-//! Derived from pbrt-v3. PCG32 originally from http://www.pcg-random.org under Apache License 2.0. (c) 2014 M.E. O'Neill / pcg-random.
 #define PCG32_DEFAULT_STATE  0x853c49e6748fea9bULL
 #define PCG32_DEFAULT_STREAM 0xda3e39cb94b95bdbULL
 #define PCG32_MULT           0x5851f42d4c957f2dULL
@@ -105,7 +105,7 @@ private:
 //====================//
 //#define TC_RAND_REJECT_BIAS 1
 
-/*!Random number generator template class.
+/*! Random number generator template class.
  * Usage:
  *   TCRandom<TC_PCG32_RandFunc> rng_;
  *   r = rngRef_.next_double() */
@@ -236,3 +236,5 @@ TCRandom<TC_PCG32_RandFunc32> rng_(rng_seed_);
 //====================//
 //====================//
 //====================//
+
+#endif
