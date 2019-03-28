@@ -4,7 +4,7 @@
 //====================//
 //=== TC RNGs ========//
 //====================//
-//! Stateless [0,2^64) splitmix64 by Daniel Lemire https://github.com/lemire/testingRNG
+//! Stateless [0,2^64) splitmix64 by Daniel Lemire https://github.com/lemire/testingRNG . Useful for seeding RNGs.
 ALWAYS_INLINE uint64_t splitmix64_stateless(const uint64_t index) noexcept { //??ns on TC's EC2! 1.3 ns on local.
     uint64_t z = index + UINT64_C(0x9E3779B97F4A7C15);
     z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
@@ -12,33 +12,36 @@ ALWAYS_INLINE uint64_t splitmix64_stateless(const uint64_t index) noexcept { //?
     return z ^ (z >> 31);
 }
 
+//! 64-bit Intel RDSEED. Useful for seeding RNGs.
+ALWAYS_INLINE uint64_t drng64() { //??ns on TC's EC2! 450 ns on local.
+    uint64_t rand;
+    unsigned char ok;
+    do {
+        asm volatile ("rdseed %0; setc %1"
+                      : "=r" (rand), "=qm" (ok));
+    } while (!ok);
+    return rand;
+}
+
 //======
-//! Lehmer RNG with 64bit multiplier, derived from https://github.com/lemire/testingRNG. High 64 bits of 128 MCG is used to generate two 32 bit random numbers.
+//! Lehmer RNG with 64bit multiplier, derived from https://github.com/lemire/testingRNG.
 class TC_MCG_Lehmer_RandFunc32 {
 public:
     TC_MCG_Lehmer_RandFunc32(const uint32_t seed = 0) {init(seed);}
     
     //!Calc LCG random number in [0,2^32)
-    ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 0.75 ns on local.
-        if (next_rnd_result_count_ == 0) {
-            state_.s128_ *= UINT64_C(0xda942042e4dd58b5);
-            next_rnd_result_ = state_.s64_[1] >> 32; next_rnd_result_count_ = 1;
-            return uint32_t(state_.s64_[1]);
-        } else {
-            next_rnd_result_count_ = 0;
-            return next_rnd_result_;
-        }
+    ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 1.0 ns on local.
+        state_.s128_ *= UINT64_C(0xda942042e4dd58b5);
+        return uint32_t(state_.s64_[1]);
     }
     
-    void init(const uint32_t seed) {next_rnd_result_ = 0; next_rnd_result_count_ = 0; state_.s128_ = (__uint128_t(splitmix64_stateless(seed)) << 64) + splitmix64_stateless(seed + 1);}
+    void init(const uint32_t seed) {state_.s128_ = (__uint128_t(splitmix64_stateless(seed)) << 64) + splitmix64_stateless(seed + 1);}
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
     
 private:
-    union{__uint128_t s128_; int64_t s64_[2];} state_; //Assumes little endian so that s64[0] is the low 64 bits of s128_.
-    uint32_t next_rnd_result_;
-    uint32_t next_rnd_result_count_;
+    union{__uint128_t s128_; uint64_t s64_[2];} state_; //Assumes little endian so that s64[0] is the low 64 bits of s128_.
 };
 
 //======
@@ -52,10 +55,11 @@ public:
         uint64_t z = (state_ += UINT64_C(0x9E3779B97F4A7C15));
         z = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);
         z = (z ^ (z >> 27)) * UINT64_C(0x94D049BB133111EB);
-        return (z ^ (z >> 31)) >> 31; //ToDo: Test if it will be faster if last shift is 32 instead of 31.
+        return static_cast<uint32_t>((z ^ (z >> 31)) >> 31); //ToDo: Test if it will be faster if last shift is 32 instead of 31.
     }
     
     void init(const uint32_t seed) {state_ = splitmix64_stateless(seed);}
+    
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
@@ -78,7 +82,7 @@ public:
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 1.5 ns on local.
         const uint64_t oldstate = state_;
         state_ = oldstate * PCG32_MULT + inc_;
-        const uint32_t xorshifted = ((oldstate >> 18) ^ oldstate) >> 27;
+        const uint32_t xorshifted = static_cast<uint32_t>(((oldstate >> 18) ^ oldstate) >> 27);
         const uint32_t rot = oldstate >> 59;
         return (xorshifted >> rot) | (xorshifted << (32 - rot));
     }
@@ -87,12 +91,37 @@ public:
         state_ = splitmix64_stateless(seed); //PCG32_DEFAULT_STATE;
         inc_ = splitmix64_stateless(seed + 1) | 1; //PCG32_DEFAULT_STREAM;
     }
+    
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
     
 private:
     uint64_t state_, inc_;
+};
+
+//======
+// 32-bit RNG using Intel's DRNG CPU instructions. Warning: It is slow! 100x slower than PCG!
+class TC_IntelDRNG_RandFunc32 {
+public:
+    TC_IntelDRNG_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    
+    //!Intel DRNG random number in [0,2^32)
+    ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 120ns on local!!!
+        uint32_t rand;
+        unsigned char ok;
+        do {
+            asm volatile ("rdrand %0; setc %1"
+                          : "=r" (rand), "=qm" (ok));
+        } while (!ok);
+        return rand;
+    }
+    
+    void init(const uint32_t seed) {}
+    
+    static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
+    static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
+    static constexpr int num_bits() noexcept {return 32;}
 };
 
 //====================//
@@ -142,14 +171,14 @@ public:
 #ifdef TC_RAND_REJECT_BIAS
         uint32_t leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
         if (leftover < s) {
-            const uint32_t threshold = uint32_t((uint64_t(1) << rf_.num_bits()) - s) % s;
+            const uint32_t threshold = /*-s % s;*/ uint32_t((uint64_t(1) << rf_.num_bits()) - s) % s;
             while (leftover < threshold) {
                 m = uint64_t(rf_()) * s;
                 leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
             }
         }
 #endif
-        const uint32_t r = (m >> rf_.num_bits());
+        const uint32_t r = static_cast<uint32_t>(m >> rf_.num_bits());
         BBBD(r>=s)//Check the random limits when TCDEBUG is defined.
         return r;
     }
@@ -231,7 +260,11 @@ TCRandom<TC_MCG_Lehmer_RandFunc32> fast_rng_(fast_rng_seed_);
 
 //const uint32_t rng_seed_ = cpp_rand_device();
 const uint32_t rng_seed_ = 0;
-TCRandom<TC_PCG32_RandFunc32> rng_(rng_seed_);
+TCRandom<TC_PCG32_RandFunc32> good_rng_(rng_seed_);
+
+//const uint32_t drng_seed_ = cpp_rand_device();
+const uint32_t drng_seed_ = 0;
+TCRandom<TC_IntelDRNG_RandFunc32> drng_rng(drng_seed_);
 
 //====================//
 //====================//

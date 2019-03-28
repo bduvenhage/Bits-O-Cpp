@@ -1,5 +1,7 @@
-#ifndef TC_RANDOM_FUNCS_H
-#define TC_RANDOM_FUNCS_H 1
+#ifndef TC_TIMER_H
+#define TC_TIMER_H 1
+
+#include <sys/time.h>
 
 //====================//
 //=== TC Timer =======//
