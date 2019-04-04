@@ -27,36 +27,27 @@
 int main()
 {
     const uint32_t rng_seed_ = 0;
-    //TCRandom<TC_MCG_Lehmer_RandFunc32> rng_(rng_seed_);
-    TCRandom<TC_IntelDRNG_RandFunc32> rng_(rng_seed_);
+    TCRandom<TC_MCG_Lehmer_RandFunc32> lehmer_rng(rng_seed_);
+    TCRandom<TC_IntelDRNG_RandFunc32> intel_rng_(rng_seed_);
 
     TCTimer::init_timer(2.89992e+09);
     
     const double start_time = TCTimer::get_tsc_time();
     
-    const uint64_t num_iterations = uint64_t(1) << 25;
-    //uint64_t t=0,f=0;
+    const uint64_t num_iterations = uint64_t(1) << 33;
     uint32_t ri = 0;
-    //double rf = 0.0;
     
     for (uint64_t i=0; i <= num_iterations; ++i)
     {
-        ri += rng_.next();
-        //ri = rng_.next();
-        //rf += rng_.next_double();
-        //t+=ri&1;
-        //f+=!(ri&1);
+        ri += lehmer_rng.next();
     }
     
     //const double end_time = TCTimer::get_tsc_time();
     const double end_time = TCTimer::sync_tsc_time();
     
-    DBN(TCTimer::get_clock_freq())
-    
-    DBN(ri)
-    //DBN(rf/num_iterations)
-    //DBN(t/double(f))
+    DBN(TCTimer::get_seconds_per_tick() * 1000000000.0)
     DBN((end_time-start_time) * 1000000000.0 / num_iterations)
-    
+    DBN(ri)
+
     return 0;
 }
