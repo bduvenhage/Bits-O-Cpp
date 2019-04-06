@@ -84,11 +84,9 @@ namespace platform_info {
         
         if (memcmp((char *) &info.ebx, "Genu", 4) ||
             memcmp((char *) &info.edx, "ineI", 4) ||
-            memcmp((char *) &info.ecx, "ntel", 4))
-        {
+            memcmp((char *) &info.ecx, "ntel", 4)) {
             return false;
-        } else
-        {
+        } else {
             return true;
         }
     }
@@ -101,8 +99,7 @@ namespace platform_info {
             cpuid_t info;
             get_cpuid(&info, 1, 0);
             
-            if ((info.ecx & 0x40000000) == 0x40000000)
-            {
+            if ((info.ecx & 0x40000000) == 0x40000000) {
                 rdrand_supported = true;
             }
             
