@@ -1,2 +1,12 @@
-# Bits-O-Cpp
-Bits of sweet C++ code that I use often.
+# Bits-O-Cpp Random
+
+Run:
+
+```console
+cd Bits-O-Cpp/random
+mkdir build
+cd build
+cmake ..
+make
+./main
+```
