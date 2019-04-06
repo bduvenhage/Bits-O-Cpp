@@ -27,11 +27,11 @@
 int main()
 {
     const uint32_t rng_seed_ = 0;
-    TCRandom<TC_MCG_Lehmer_RandFunc32> lehmer_rng(rng_seed_);
+    TC_MCG_Lehmer_RandFunc32 lehmer_rng(rng_seed_);
     
     DBN(platform_info::is_intel_cpu())
     DBN(platform_info::is_drng_supported())
-    TCRandom<TC_IntelDRNG_RandFunc32> intel_rng_(rng_seed_);
+    TC_IntelDRNG_RandFunc32 intel_rng_(rng_seed_);
 
     std::cout << "Generating some random numbers...";
     
@@ -44,9 +44,9 @@ int main()
 
     for (uint64_t i=0; i <= num_iterations; ++i)
     {
-        //ri += lehmer_rng.next();
-        ri += intel_rng_.next();
-        //ri += rdseed64();
+        //ri += lehmer_rng();
+        //ri += intel_rng_();
+        ri += rdseed64();
     }
     
     const double end_time = TCTimer::sync_tsc_time(); // Same as get_time(), but also estimates CPU's seconds_per_tick_.

@@ -21,7 +21,8 @@ ALWAYS_INLINE uint64_t rdseed64() noexcept { //??ns on TC's EC2! 450 ns on local
                   : "=r" (rand), "=qm" (ok));
     
     while (!ok) {
-        asm volatile ("pause; rdseed %0; setc %1"
+        asm volatile ("pause" : );
+        asm volatile ("rdseed %0; setc %1"
                       : "=r" (rand), "=qm" (ok));
     }
     return rand;
@@ -29,7 +30,7 @@ ALWAYS_INLINE uint64_t rdseed64() noexcept { //??ns on TC's EC2! 450 ns on local
 //rdseed64():
 //      jmp .L6
 //  .L3:
-//      pause;
+//      pause
 //  .L6:
 //      rdseed rax; setc dl
 //      test dl, dl
