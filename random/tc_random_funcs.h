@@ -13,15 +13,28 @@ ALWAYS_INLINE uint64_t splitmix64_stateless(const uint64_t index) noexcept { //?
 }
 
 //! 64-bit Intel RDSEED. Useful for seeding RNGs.
-ALWAYS_INLINE uint64_t drng64() { //??ns on TC's EC2! 450 ns on local.
+ALWAYS_INLINE uint64_t rdseed64() noexcept { //??ns on TC's EC2! 450 ns on local.
     uint64_t rand;
     unsigned char ok;
-    do {
-        asm volatile ("rdseed %0; setc %1"
+    
+    asm volatile ("rdseed %0; setc %1"
+                  : "=r" (rand), "=qm" (ok));
+    
+    while (!ok) {
+        asm volatile ("pause; rdseed %0; setc %1"
                       : "=r" (rand), "=qm" (ok));
-    } while (!ok);
+    }
     return rand;
 }
+//rdseed64():
+//      jmp .L6
+//  .L3:
+//      pause;
+//  .L6:
+//      rdseed rax; setc dl
+//      test dl, dl
+//      je .L3
+//  ret
 
 //======
 //! Lehmer RNG with 64bit multiplier, derived from https://github.com/lemire/testingRNG.
@@ -117,7 +130,7 @@ public:
         return rand;
     }
     
-    void init(const uint32_t seed) {}
+    void init(const uint32_t seed) {} //No seeding required.
     
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
