@@ -120,15 +120,15 @@ std::vector<int> knapsack_dyn_prog(const std::vector<std::pair<int, int>> &weigh
         }
     }
     
-    //for (int i=0; i<=weight_value_vect_size; ++i)
-    //{
-    //    for (int w=0; w<=W_; ++w)
-    //    {
-    //        std::cout << value_array[i][w] << "\t";
-    //    }
-    //
-    //    std::cout << "\n";
-    //}
+    for (int i=0; i<=weight_value_vect_size; ++i)
+    {
+        for (int w=0; w<=W_; ++w)
+        {
+            std::cout << value_array[i][w] << "\t";
+        }
+    
+        std::cout << "\n";
+    }
     
     
     {// Trace solution from value_array.
@@ -137,11 +137,13 @@ std::vector<int> knapsack_dyn_prog(const std::vector<std::pair<int, int>> &weigh
         
         do {
             if (value_array[i][w] != value_array[i-1][w])
-            {// Object i (1 indexed) contributed to the weight and was therefore used in solution.
-                object_used[i-1] = true;
+            {// Object i (1 indexed) seems to have contributed to the value and
+             // must therefore be part of the solution.
+                object_used[i-1] = true; // i-1 gives zero indexed object!
                 num_objects_used += 1;
                 
-                w -= weight_value_vect_[i-1].first;
+                w -= weight_value_vect_[i-1].first; // Subtract the weight of this object so that
+                                                    // traversal continues from m[i-1][w - w[i-1]].
             }
             
             i -= 1;
@@ -180,9 +182,9 @@ TCRandom<TC_MCG_Lehmer_RandFunc32> rng(987654321);
 int main(void)
 {
     // === Setup the problem ===//
-    //std::cout << "\nProblem 1: \n";
-    //const int W = 5;
-    //std::vector<std::pair<int, int>> weight_value_vect = {{3, 8}, {4, 12}, {2, 5}};
+    std::cout << "\nProblem 1: \n";
+    const int W = 5;
+    std::vector<std::pair<int, int>> weight_value_vect = {{3, 8}, {4, 12}, {2, 5}};
     
     //std::cout << "\nProblem 2: \n";
     //const int W = 10;
@@ -193,14 +195,14 @@ int main(void)
     //    weight_value_vect.push_back(std::make_pair(rng.next(10), i+1));
     //}
     
-    std::cout << "\nProblem 3: \n";
-    const int W = 10000;
-    const int n = 10000;
-    std::vector<std::pair<int, int>> weight_value_vect;
-    for (int i=0; i<n; ++i)
-    {
-        weight_value_vect.push_back(std::make_pair(rng.next(100), i+1));
-    }
+    //std::cout << "\nProblem 3: \n";
+    //const int W = 10000;
+    //const int n = 10000;
+    //std::vector<std::pair<int, int>> weight_value_vect;
+    //for (int i=0; i<n; ++i)
+    //{
+    //    weight_value_vect.push_back(std::make_pair(rng.next(100), i+1));
+    //}
     
     
     // === Solve the problem ===//
