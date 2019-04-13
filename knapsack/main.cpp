@@ -179,7 +179,7 @@ int64_t calc_knapsack_value(const std::vector<int> &object_ids,
 const double EXP_TSC_FREQ = 2.89992e+09;
 TCRandom<TC_MCG_Lehmer_RandFunc32> rng(987654321);
 
-int main(void)
+int main(void) // See post at https://bduvenhage.me/algorithms/dynamic%20programming/2019/04/04/the-knapsack-problem.html
 {
     // === Setup the problem ===//
     std::cout << "\nProblem 1: \n";
