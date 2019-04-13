@@ -97,12 +97,15 @@ void test_vector(const int num_iterations)
     // == POP BACK
     {
         double start_time = TCTimer::get_time();
+        int number_sink = 0;
         
         for (int i=0; i<(num_iterations>>1); ++i)
         {
+            number_sink += v.back();
             v.pop_back();
         }
         
+        DBN(number_sink)
         double end_time = TCTimer::get_time();
         vector_pop_back = end_time - start_time;
     }
@@ -162,12 +165,15 @@ void test_deque(const int num_iterations)
     // == POP BACK
     {
         double start_time = TCTimer::get_time();
+        int number_sink = 0;
         
         for (int i=0; i<(num_iterations>>1); ++i)
         {
+            number_sink += d.back();
             d.pop_back();
         }
         
+        DBN(number_sink)
         double end_time = TCTimer::get_time();
         deque_pop_back = end_time - start_time;
     }
@@ -185,8 +191,14 @@ int main(void)
     int num_iterations = 100000000; // 100M elements * 4 bytes.
     num_iterations = (num_iterations >> 1) << 1; // Make sure num_iterations is even.
 
+    std::cout << "Doing tests...";
+    std::cout.flush();
+
+    //Note: Only do one test at a time! Either test_vector OR test_deque.
     test_vector(num_iterations);
     //test_deque(num_iterations);
+    
+    std::cout << "done.\n";
 
     DBN(vector_push_back)
     //DBN(vector_push_front)
