@@ -24,8 +24,11 @@
 // ToDo: what would be a realistic test case that would realistically flush the cache and registers?
 
 
-int main()
+int main() // See post at https://bduvenhage.me/rng/2019/04/06/the-intel-drng.html
 {
+    DBN(platform_info::get_cpu())
+    DBN(platform_info::get_compiler())
+    
     const uint32_t rng_seed_ = 0;
     TC_MCG_Lehmer_RandFunc32 lehmer_rng(rng_seed_);
     
@@ -35,7 +38,7 @@ int main()
 
     std::cout << "Generating some random numbers...";
     
-    TCTimer::init_timer(2.89992e+09);
+    TCTimer::init_timer(2.89992e+09); // The param is the initial guess of your CPU's clock rate in GHz.
     
     const uint64_t num_iterations = uint64_t(1) << 27;
     uint32_t ri = 0;
@@ -45,8 +48,8 @@ int main()
     for (uint64_t i=0; i <= num_iterations; ++i)
     {
         //ri += lehmer_rng();
-        //ri += intel_rng_();
-        ri += rdseed64();
+        ri += intel_rng_();
+        //ri += rdseed64();
     }
     
     const double end_time = TCTimer::sync_tsc_time(); // Same as get_time(), but also estimates CPU's seconds_per_tick_.
