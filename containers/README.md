@@ -1,6 +1,7 @@
 # Bits-O-Cpp Container test
+See post https://bduvenhage.me/performance/2019/04/12/performance-of-deque.html
 
-Run:
+To run:
 
 ```console
 cd Bits-O-Cpp/containers
