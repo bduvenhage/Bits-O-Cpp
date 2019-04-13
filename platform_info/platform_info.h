@@ -3,6 +3,7 @@
 //=====================//
 #include <cpuid.h>
 #include <x86intrin.h>
+#include <iostream>
 
 //FTZ & DAZ - in a block scope!:
 //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); //FTZ - Sets denormal results from floating-point calculations to zero.
@@ -34,7 +35,7 @@ namespace platform_info {
     }
     
     std::string get_cpu() {
-        std::cerr << "get_cpu_info(): \n";
+        // std::cerr << "get_cpu_info(): \n";
         char CPUBrandString[64];
         std::memset(CPUBrandString, 0, sizeof(CPUBrandString));
         uint32_t CPUInfo[4] = {0,0,0,0};
@@ -56,15 +57,17 @@ namespace platform_info {
             }
         }
         
-        std::cerr << "  CPUBrandString: " << CPUBrandString << "\n";
+        // std::cerr << "  CPUBrandString: " << CPUBrandString << "\n";
         return CPUBrandString;
     }
     
     std::string get_compiler() {
         char compiler_info[1024];
-#if defined(__clang__)
+#if defined(__clang__) && defined(__APPLE__)
+        sprintf(compiler_info, "apple LLVM (clang) %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
+#elif defined(__clang__)
         sprintf(compiler_info, "clang %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
-#elif defined(__GNUC__) || defined(__GNUG__)
+#elif defined(__GNUC__)
         sprintf(compiler_info, "gcc %d.%d.%d", __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
 #else
         sprintf(compiler_info, "Unknown compiler.");
