@@ -76,11 +76,12 @@ int main(void)
 
     fout << "s.size()" << ", ";
     fout << "TCTimer::get_time()" << ", ";
+    fout << "tracked_allocator_total (MB)" << ", ";
     fout << "s.load_factor()" << ", ";
     fout << "s.bucket_count()" << "\n";
     fout.flush();
 
-    DBN(sizeof(TestStruct))
+    DBN(sizeof(BucketItem))
     DBN(sizeof(s))
     DBN(s.max_load_factor())
 
@@ -119,6 +120,7 @@ int main(void)
 
             fout << s.size() << ", ";
             fout << TCTimer::get_time() << ", ";
+            fout << tracked_allocator_total/(1024*1024) << ", ";
             fout << s.load_factor() << ", ";
             fout << s.bucket_count() << "\n";
             fout.flush();
