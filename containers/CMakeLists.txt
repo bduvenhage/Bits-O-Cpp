@@ -26,11 +26,20 @@ LINK_DIRECTORIES(${CMAKE_SOURCE_DIR} /usr/local/lib /opt/local/lib)
 
 ###########
 
-SET(APP_SRC
+SET(VectorvsDeque_SRC
   ../platform_info/platform_info.h
   ../time/tc_timer.h
   ../random/tc_random_funcs.h
-  main.cpp
+  main_vector_vs_deque.cpp
 )
 
-ADD_EXECUTABLE(main ${APP_SRC})
+ADD_EXECUTABLE(vector_vs_deque ${VectorvsDeque_SRC})
+
+SET(HashTable_SRC
+../platform_info/platform_info.h
+../time/tc_timer.h
+../random/tc_random_funcs.h
+main_hash_table.cpp
+)
+
+ADD_EXECUTABLE(hash_table ${HashTable_SRC})
