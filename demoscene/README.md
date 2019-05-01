@@ -1,8 +1,11 @@
 # Bits-O-Cpp Demoscene fire
-See post https://bduvenhage.me/...
+See post https://bduvenhage.me/memory_bank/2019/04/30/memory-bank_making-fire-and-water.html
 
 To run:
 
+To run, first install SDL. On OSX I could just do `brew install sdl2`.
+
+Then do:
 ```console
 cd Bits-O-Cpp/demoscene
 mkdir build
