@@ -1,4 +1,4 @@
-// Water Flow (500 FPS on Broadwell 2.9GHz i5)
+// Water Flow (500 FPS @ 256x256 on Broadwell 2.9GHz i5)
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 #define NEVER_INLINE __attribute__((noinline))
@@ -40,14 +40,14 @@ int main(void)
     const int screen_height = 640;
     sdl::init(screen_width, screen_height);
     
-    const int texture_width = 256;
-    const int texture_height = 256;
+    const int texture_width = 320;
+    const int texture_height = 320;
     sdl::init_pixel_texture(texture_width, texture_height);
     
     int **buffers = new int *[2];
     buffers[0] = new int[texture_width * texture_height];
     buffers[1] = new int[texture_width * texture_height];
-    int source_buf_idx = 0, sink_buf_idx = 1;
+    int previous_buf_idx = 0, current_buf_idx = 1;
 
     memset(buffers[0], 0, texture_width * texture_height * sizeof(int));
     memset(buffers[1], 0, texture_width * texture_height * sizeof(int));
@@ -72,17 +72,18 @@ int main(void)
         
         if (rng.next_float() < 0.25)
         { // Add a water drop.
-            uint8_t rc = rng.next(256); // drop volume.
+            uint8_t rc = rng.next(256); // drop element volume.
             
             const int x = rng.next(2, texture_width-4); // drop position.
             const int y = rng.next(2, texture_height-4);
             const int y_offset = y * texture_width;
             
-            buffers[source_buf_idx][x + y_offset] = rc;
-            buffers[source_buf_idx][x+1 + y_offset] = rc;
-            buffers[source_buf_idx][x-1 + y_offset] = rc;
-            buffers[source_buf_idx][x + y_offset+texture_width] = rc;
-            buffers[source_buf_idx][x + y_offset-texture_width] = rc;
+            // Cross shaped water drop.
+            buffers[previous_buf_idx][x + y_offset] = rc;
+            buffers[previous_buf_idx][x+1 + y_offset] = rc;
+            buffers[previous_buf_idx][x-1 + y_offset] = rc;
+            buffers[previous_buf_idx][x + y_offset+texture_width] = rc;
+            buffers[previous_buf_idx][x + y_offset-texture_width] = rc;
         }
 
         { // Add some water around mouse position.
@@ -93,7 +94,7 @@ int main(void)
                     const int y_offset = y * texture_width;
                     
                     for (int x=tx-1; x<=tx+1; ++x) {
-                        buffers[source_buf_idx][x + y_offset] = rc;
+                        buffers[previous_buf_idx][x + y_offset] = rc;
                     }
                 }
         }
@@ -103,23 +104,17 @@ int main(void)
                 const int y_offset = y * texture_width;
                 
                 for (int x=1; x<texture_width-1; ++x) {
-                    buffers[sink_buf_idx][x + y_offset] =
+                    buffers[current_buf_idx][x + y_offset] =
                     // Surrounding water will affect water height map ...
-                    ((buffers[source_buf_idx][x + y_offset-texture_width] +
-                      buffers[source_buf_idx][x-1 + y_offset] +
-                      buffers[source_buf_idx][x+1 + y_offset] +
-                      buffers[source_buf_idx][x + y_offset+texture_width]) >> 1) -
+                    ((buffers[previous_buf_idx][x + y_offset-texture_width] +
+                      buffers[previous_buf_idx][x-1 + y_offset] +
+                      buffers[previous_buf_idx][x+1 + y_offset] +
+                      buffers[previous_buf_idx][x + y_offset+texture_width]) >> 1) -
                     // positively or negatively depending on current height!
-                    buffers[sink_buf_idx][x + y_offset];
-                }
-            }
-            
-            // Apply small extinction to water waves.
-            for (int y=1; y<(texture_height-1); ++y) {
-                const int y_offset = y * texture_width;
-                
-                for (int x=1; x<texture_width-1; ++x) {
-                    buffers[sink_buf_idx][x + y_offset] -= buffers[sink_buf_idx][x + y_offset] >> 5;
+                    buffers[current_buf_idx][x + y_offset];
+                    
+                    // Apply small extinction to water waves.
+                    buffers[current_buf_idx][x + y_offset] -= buffers[current_buf_idx][x + y_offset] >> 5;
                 }
             }
         }
@@ -131,7 +126,7 @@ int main(void)
                 
                 for (int x=0; x<texture_width; ++x)
                 {
-                    int water_height = buffers[sink_buf_idx][x + y_offset]+128;
+                    int water_height = buffers[current_buf_idx][x + y_offset]+128;
                     // Note: For refraction effect, use the water height map to calculate and offset texture lookup.
                     
                     if (water_height > 255) water_height = 255;
@@ -143,7 +138,7 @@ int main(void)
         }
         
         sdl::update_display();
-        std::swap(source_buf_idx, sink_buf_idx);
+        std::swap(previous_buf_idx, current_buf_idx);
         
         while( SDL_PollEvent( &e ) != 0 )
         {
@@ -160,7 +155,7 @@ int main(void)
                 }
         }
         
-        SDL_Delay(25);
+        SDL_Delay(250);
     }
     
     const int FPS = num_frames / (TCTimer::get_time() - start_time);

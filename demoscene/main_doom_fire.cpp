@@ -1,4 +1,4 @@
-// DOOM Fire (850 FPS on Broadwell 2.9GHz i5) - credit to http://fabiensanglard.net/doom_fire_psx/ for a recent description of the technique.
+// DOOM Fire (850 FPS @ 256x256 on Broadwell 2.9GHz i5) - credit to http://fabiensanglard.net/doom_fire_psx/ for a recent description of the technique.
 
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 #define NEVER_INLINE __attribute__((noinline))
@@ -39,8 +39,8 @@ int main(void)
     const int screen_height = 640;
     sdl::init(screen_width, screen_height);
     
-    const int texture_width = 256;
-    const int texture_height = 256;
+    const int texture_width = 320;
+    const int texture_height = 320;
     sdl::init_pixel_texture(texture_width, texture_height);
     
     int *buffer = new int[texture_width * texture_height];
