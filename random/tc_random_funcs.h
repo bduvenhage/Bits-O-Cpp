@@ -43,7 +43,7 @@ ALWAYS_INLINE uint64_t rdseed64() noexcept { //??ns on TC's EC2! 450 ns on local
 //! Lehmer RNG with 64bit multiplier, derived from https://github.com/lemire/testingRNG.
 class TC_MCG_Lehmer_RandFunc32 {
 public:
-    TC_MCG_Lehmer_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_MCG_Lehmer_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc LCG random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 1.0 ns on local.
@@ -51,7 +51,7 @@ public:
         return uint32_t(state_.s64_[1]);
     }
     
-    void init(const uint32_t seed) {state_.s128_ = (__uint128_t(splitmix64_stateless(seed)) << 64) + splitmix64_stateless(seed + 1);}
+    void init(const uint32_t seed) noexcept {state_.s128_ = (__uint128_t(splitmix64_stateless(seed)) << 64) + splitmix64_stateless(seed + 1);}
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
@@ -64,7 +64,7 @@ private:
 //! splitmix 64. High 32 bits of 64 bit random number is used.
 class TC_SplitMix_64_RandFunc32 {
 public:
-    TC_SplitMix_64_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_SplitMix_64_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc splitmix random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 1.3 ns on local.
@@ -74,7 +74,7 @@ public:
         return static_cast<uint32_t>((z ^ (z >> 31)) >> 31); //ToDo: Test if it will be faster if last shift is 32 instead of 31.
     }
     
-    void init(const uint32_t seed) {state_ = splitmix64_stateless(seed);}
+    void init(const uint32_t seed) noexcept {state_ = splitmix64_stateless(seed);}
     
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
@@ -92,7 +92,7 @@ private:
 //! Derived from pbrt-v3. PCG32 originally from http://www.pcg-random.org under Apache License 2.0. (c) 2014 M.E. O'Neill / pcg-random.
 class TC_PCG32_RandFunc32 {
 public:
-    TC_PCG32_RandFunc32(const uint64_t seed = 0) {init(seed);}
+    TC_PCG32_RandFunc32(const uint64_t seed = 0) noexcept {init(seed);}
     
     //!Calc PCG32 random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 1.5 ns on local.
@@ -103,7 +103,7 @@ public:
         return (xorshifted >> rot) | (xorshifted << (32 - rot));
     }
     
-    void init(const uint64_t seed) {
+    void init(const uint64_t seed) noexcept {
         state_ = splitmix64_stateless(seed); //PCG32_DEFAULT_STATE;
         inc_ = splitmix64_stateless(seed + 1) | 1; //PCG32_DEFAULT_STREAM;
     }
@@ -120,7 +120,7 @@ private:
 // 32-bit RNG using Intel's DRNG CPU instructions. Warning: It is slow! 100x slower than PCG!
 class TC_IntelDRNG_RandFunc32 {
 public:
-    TC_IntelDRNG_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_IntelDRNG_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Intel DRNG random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 120ns on local!!!
@@ -133,7 +133,7 @@ public:
         return rand;
     }
     
-    void init(const uint32_t seed) {} //No seeding required.
+    void init(const uint32_t seed) noexcept {} //No seeding required.
     
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
@@ -146,7 +146,7 @@ public:
 //! The typical LCG implemented by C++ compilers. High 16 bits of the 32 bit LCG is used here.
 class TC_LCG_STD_RandFunc16 {
 public:
-    TC_LCG_STD_RandFunc16(const uint32_t seed = 0) {init(seed);}
+    TC_LCG_STD_RandFunc16(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc LCG random number in [0,2^16)
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 1.2 ns on local.
@@ -156,7 +156,7 @@ public:
         return state_ >> 16;
     }
     
-    void init(const uint32_t seed) {state_=splitmix64_stateless(seed);}
+    void init(const uint32_t seed) noexcept {state_=splitmix64_stateless(seed);}
     static constexpr double max_plus_one() noexcept {return 65536.0;} //0x1p16
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 65536.0);} //1.0/0x1p16
     static constexpr int num_bits() noexcept {return 16;}
@@ -169,7 +169,7 @@ private:
 //! XOR Shift 128. High 16 bits of 32 bit random number is used.
 class TC_XOR_SHIFT_128_RandFunc16 {
 public:
-    TC_XOR_SHIFT_128_RandFunc16(const uint32_t seed = 0) {init(seed);}
+    TC_XOR_SHIFT_128_RandFunc16(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc XOR shift random number in [0,2^16)
     ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 1.2 ns on local.
@@ -179,7 +179,7 @@ public:
         return w_ >> 16;
     }
     
-    void init(const uint32_t seed) {x_ = splitmix64_stateless(seed); y_ = splitmix64_stateless(seed+1); z_ = splitmix64_stateless(seed+2); w_ = splitmix64_stateless(seed+3);}
+    void init(const uint32_t seed) noexcept {x_ = splitmix64_stateless(seed); y_ = splitmix64_stateless(seed+1); z_ = splitmix64_stateless(seed+2); w_ = splitmix64_stateless(seed+3);}
     static constexpr double max_plus_one() noexcept {return 65536.0;} //0x1p16
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 65536.0);} //1.0/0x1p16
     static constexpr int num_bits() noexcept {return 16;}
@@ -192,7 +192,7 @@ private:
 //! XOR Shift 128+. High 32 bits of 64 bit random number is used.
 class TC_XOR_SHIFT_128_Plus_RandFunc32 {
 public:
-    TC_XOR_SHIFT_128_Plus_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_XOR_SHIFT_128_Plus_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc XOR shift random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 1.35 ns on local.
@@ -204,7 +204,7 @@ public:
         return (k2_ + s0) >> 32;
     }
     
-    void init(const uint32_t seed) {k1_ = splitmix64_stateless(seed); k2_ = splitmix64_stateless(seed + 1);}
+    void init(const uint32_t seed) noexcept {k1_ = splitmix64_stateless(seed); k2_ = splitmix64_stateless(seed + 1);}
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
@@ -217,7 +217,7 @@ private:
 //! XOR Shift 64. High 32 bits of 64 bit random number is used.
 class TC_XOR_SHIFT_64_RandFunc32 {
 public:
-    TC_XOR_SHIFT_64_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_XOR_SHIFT_64_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     //!Calc XOR shift random number in [0,2^32)
     ALWAYS_INLINE uint32_t operator()() noexcept {//??ns on TC's EC2! 2.00 ns on local.
@@ -228,7 +228,7 @@ public:
         return result >> 32;
     }
     
-    void init(const uint32_t seed) {state_ = splitmix64_stateless(seed);}
+    void init(const uint32_t seed) noexcept {state_ = splitmix64_stateless(seed);}
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}
@@ -240,7 +240,7 @@ private:
 //======
 class TC_MT32_RandFunc32 {
 public:
-    TC_MT32_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    TC_MT32_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 3.2 ns on local.
         if (index_ == 0) {generate();}
@@ -250,7 +250,7 @@ public:
         return y;
     }
     
-    void init(const uint32_t seed) {
+    void init(const uint32_t seed) noexcept {
         MT_[0] = seed;
         for (int i=1; i<624; ++i) {MT_[i] = (1812433253UL * (MT_[i-1] ^ (MT_[i-1] >> 30)) + i);}
         index_ = 0;
@@ -285,13 +285,13 @@ private:
 //======
 class CPP_MT32_RandFunc32 {
 public:
-    CPP_MT32_RandFunc32(const uint32_t seed = 0) {init(seed);}
+    CPP_MT32_RandFunc32(const uint32_t seed = 0) noexcept {init(seed);}
     
     ALWAYS_INLINE uint32_t operator()() noexcept { //??ns on TC's EC2! 5.4 ns on local.
         return rndGen_();
     }
     
-    void init(const uint32_t seed) {rndGen_.seed(seed);}
+    void init(const uint32_t seed) noexcept {rndGen_.seed(seed);}
     static constexpr double max_plus_one() noexcept {return 4294967296.0;} //0x1p32
     static constexpr double recip_max_plus_one() noexcept {return (1.0 / 4294967296.0);} //1.0/0x1p32
     static constexpr int num_bits() noexcept {return 32;}

@@ -155,7 +155,7 @@ int main(void)
                 }
         }
         
-        SDL_Delay(250);
+        SDL_Delay(25);
     }
     
     const int FPS = num_frames / (TCTimer::get_time() - start_time);
