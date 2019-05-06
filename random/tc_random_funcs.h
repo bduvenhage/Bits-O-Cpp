@@ -307,7 +307,8 @@ private:
 //====================//
 //=== TCRandom =======//
 //====================//
-//#define TC_RAND_REJECT_BIAS 1
+// TC_RAND_REJECT_BIAS compiles in Lemire's bias rejection part of his bounded random number generator algorithm!
+#define TC_RAND_REJECT_BIAS 1
 
 /*! Random number generator template class.
  * Usage:
@@ -341,15 +342,17 @@ public:
     
     //!Get uniform uint32_t in [0,x) :
     ALWAYS_INLINE uint32_t next(const uint32_t s) noexcept {
-        //Daniel Lemire https://arxiv.org/abs/1805.10941
+        // Daniel Lemire https://arxiv.org/abs/1805.10941
         uint64_t m = uint64_t(rf_()) * s;
 #ifdef TC_RAND_REJECT_BIAS
-        uint32_t leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
-        if (leftover < s) {
-            const uint32_t threshold = /*-s % s;*/ uint32_t((uint64_t(1) << rf_.num_bits()) - s) % s;
-            while (leftover < threshold) {
-                m = uint64_t(rf_()) * s;
-                leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
+        { // Reject the bias present in calc [(rf_() * s) >> rf_.num_bits()]
+            uint32_t leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
+            if (leftover < s) {
+                const uint32_t threshold = /*-s % s;*/ uint32_t((uint64_t(1) << rf_.num_bits()) - s) % s;
+                while (leftover < threshold) {
+                    m = uint64_t(rf_()) * s;
+                    leftover = m & uint32_t((uint64_t(1) << rf_.num_bits()) - 1);
+                }
             }
         }
 #endif
