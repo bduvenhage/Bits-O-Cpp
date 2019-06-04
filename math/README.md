@@ -1,5 +1,5 @@
 # Fast exp and log2 test
-See posts https://bduvenhage.me/???.html
+See post https://bduvenhage.me/performance/machine_learning/2019/06/04/fast-exp.html
 
 To compile:
 
