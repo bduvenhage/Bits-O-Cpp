@@ -68,7 +68,7 @@ int main(void)
 
     const double EXP_TSC_FREQ = 2.89992e+09;
     TCTimer::init_timer(EXP_TSC_FREQ);
-    TCRandom<TC_MCG_Lehmer_RandFunc32> rng(987654321); // Fast random number generator used to fill set.
+        TCRandom<TC_MCG_Lehmer_RandFunc32> rng(987654321); // Fast random number generator used to fill set.
     
     int num_iterations = 20000000;
     

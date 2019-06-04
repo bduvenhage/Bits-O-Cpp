@@ -368,7 +368,7 @@ public:
         return r;
     }
     
-    //!Get uniform float in [0.0f..1.0f) - Note: Due to limited precision a 1.0f is sometimes generated.
+    //!Get uniform float in [0.0f..1.0f) - Note: Due to limited precision a 1.0f is sometimes generated???
     ALWAYS_INLINE float next_float() noexcept {
         const float r=(float(rf_())+0.5f) * float(RandFunc::recip_max_plus_one());
         BBBD(r>=1.0f)//Check the random limits when TCDEBUG is defined.
