@@ -1,6 +1,6 @@
 # Bits-O-Cpp Random
 
-Run:
+To run clone the repo and do:
 
 ```console
 cd Bits-O-Cpp/random
