@@ -1,7 +1,7 @@
 # Bits-O-Cpp Container test
 See posts https://bduvenhage.me/performance/2019/04/12/performance-of-deque.html and https://bduvenhage.me/performance/2019/04/22/size-of-hash-table.html
 
-To compile:
+To compile clone the repo and then do:
 
 ```console
 cd Bits-O-Cpp/containers
