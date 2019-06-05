@@ -29,11 +29,23 @@ namespace tc_math {
     //! Approximate exp by Schraudolph, 1999 - double precision floating point version.
     ALWAYS_INLINE double fast_exp(const double x) noexcept {
         // Based on Schraudolph 1999, A Fast, Compact Approximation of the Exponential Function.
+        // See the improved fast_exp_64 implementation below!
         // Valid for x in approx range (-700, 700).
         union{double d_; int32_t i_[2];} uid; //This could be moved to the thread scope.
         //BBBD(sizeof(uid)!=8)
         uid.i_[0] = 0;
         uid.i_[1] = int32_t(double((1<<20) / log(2.0)) * x + double(1023 * (1<<20) - 0)); //c=0 for zero at zero.
+        return uid.d_;
+    }
+    
+    //! Approximate exp adapted from Schraudolph, 1999 - double precision floating point version.
+    ALWAYS_INLINE double fast_exp_64(const double x) noexcept {
+        // Based on Schraudolph 1999, A Fast, Compact Approximation of the Exponential Function.
+        // Adapted to use 64-bit integer; reduces staircase effect.
+        // Valid for x in approx range (-700, 700).
+        union{double d_; int64_t i_;} uid; //This could be moved to the thread scope.
+        //BBBD(sizeof(uid)!=8)
+        uid.i_ = int64_t(double((int64_t(1) << 52) / log(2.0)) * x + double(1023 * (int64_t(1) << 52) - 0)); //c=0 for zero at zero.
         return uid.d_;
     }
 }

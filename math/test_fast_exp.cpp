@@ -60,7 +60,7 @@ double test_fast_exp_perf(const uint64_t num_iterations) {
     
     for (uint64_t i=0; i<num_iterations; ++i) {
         const double r = rng.next_double();
-        sum_sink += tc_math::fast_exp(r);
+        sum_sink += tc_math::fast_exp_64(r);
     }
     
     const double end_time = TCTimer::get_time();
@@ -77,7 +77,7 @@ double sigmoid(const double x)
 //! Sigmoid using `fast_exp`.
 double fast_sigmoid(const double x)
 {
-    return 1.0 / (1.0 + tc_math::fast_exp(-x));
+    return 1.0 / (1.0 + tc_math::fast_exp_64(-x));
 }
 
 //! Test the accuracy of `fast_exp` and optionally write a results.csv file.
@@ -98,7 +98,7 @@ double test_accuracy(const double x_l, const double x_r,
     
     for (double x=x_l; x<x_r; x+=dx) {
         const double e = exp(x);
-        const double fe = tc_math::fast_exp(x);
+        const double fe = tc_math::fast_exp_64(x);
         const double abs_sample_error = fabs(fe - e);
         
         if (img_stream.is_open())
@@ -124,6 +124,7 @@ int main(void)
     
     const double EXP_TSC_FREQ = 2.89992e+09; // Doesn't really matter when using get_time() aot get_tsc_time().
     TCTimer::init_timer(EXP_TSC_FREQ);
+    DBN(TCTimer::get_seconds_per_tick())
 
     const uint64_t num_iterations = 300000000;
 
