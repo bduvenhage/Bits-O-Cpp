@@ -3,7 +3,7 @@ See post https://bduvenhage.me/memory_bank/2019/04/30/memory-bank_making-fire-an
 
 To run, first install SDL. On OSX I could just do `brew install sdl2`.
 
-Then do:
+Then clone the repo and do:
 ```console
 cd Bits-O-Cpp/demoscene
 mkdir build
