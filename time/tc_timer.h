@@ -8,12 +8,17 @@
 //=== TC Timer =======//
 //====================//
 /*!Singleton/Static Timer that uses 'timeofday' and the TSC timer. A modern constant_tsc and nonstop_tsc CPU is assumed.
- * Usage:
+ * EXAMPLE Usage:
  *   TCTimer::init_timer(2500000000); //Initial guess of performance timer freq.
  *   time = TCTimer::get_time(); //Return the number of seconds since init_timer(). Based on gettimeofday!
+ *
  *   ... After some time has passed.
+ *
  *   TCTimer::sync_tsc_time(); //Update the initial guess of performance timer freq.
- *   time = TCTimer::get_tsc_time(); //Return the number of seconds since init_timer. Based on TSC! */
+ *   time = TCTimer::get_tsc_time(); //Return the number of seconds since init_timer. Based on TSC! 
+ *
+ *   //TCTimer::get_tsc_time() is much quicker than TCTimer::get_time()!
+ */
 class TCTimer {
 public:
     //!Re-init the timers to the current time.
