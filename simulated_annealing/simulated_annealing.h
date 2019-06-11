@@ -1,14 +1,4 @@
 
-//! Approximate exp - Based on Schraudolph 1999 - Valid for x in approx range (-700, 700)
-ALWAYS_INLINE double fast_exp(const double x) noexcept
-{
-    union{double d_; int32_t i_[2];} uid;
-    //BBBD(sizeof(uid)!=8)
-    uid.i_[0] = 0;
-    uid.i_[1] = int32_t(double((1<<20) / log(2.0)) * x + double(1023 * (1<<20) - 0));//params for zero at zero.
-    return uid.d_;
-}
-
 const double T = 50.0 * (1.000001 - pow(time / max_time_, 1.0));
 const double p = exp((solution_vec[si].length_ - new_solution.length_)/T);
 
