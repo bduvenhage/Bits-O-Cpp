@@ -90,18 +90,20 @@ private:
         return tv.tv_sec + tv.tv_usec*0.000001;
     }
     
-    static double seconds_per_tick_;//!< Number of seconds per TSC tick. Updated in sync_tsc_time().
     static int chip_;//!< Chip number on which sync_tsc_time() last executed.
     static int core_;//!< Core number on which sync_tsc_time() last executed.
+    
+    static double seconds_per_tick_;//!< Number of seconds per TSC tick. Updated in sync_tsc_time().
     static double init_time_;//!< Reference time in seconds from gettimeofday().
     static uint64_t init_tick_;//!< Reference TSC tick.
 };
 
+int TCTimer::chip_=0;
+int TCTimer::core_=0;
+
 double TCTimer::seconds_per_tick_=0.0;
 double TCTimer::init_time_=0.0;
 uint64_t TCTimer::init_tick_=0;
-int TCTimer::chip_=0;
-int TCTimer::core_=0;
 
 
 #endif
