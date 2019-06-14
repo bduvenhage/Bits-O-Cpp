@@ -15,38 +15,81 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
+
+
+using Vertex = std::pair<int, int>;
+using Line = std::pair<Vertex, Vertex>;
+
+std::vector<Line> grow_koch_snowflake(const std::vector<Line> &input_snowflake)
+{
+    std::vector<Line> output_snowflake;
+    output_snowflake.reserve(input_snowflake.size() * 4);
+    
+    for (const auto &line : input_snowflake)
+    {
+        const double x0 = line.first.first + 0.5;
+        const double x1 = line.second.first + 0.5;
+
+        const double y0 = line.first.second + 0.5;
+        const double y1 = line.second.second + 0.5;
+
+        const double xa = (x1-x0) * (1.0/3.0) + x0;
+        const double xb = (x1-x0) * (1.0/2.0) + x0 - sin(60.0*M_PI/180.0)*(y1-y0)/3.0;
+        const double xc = (x1-x0) * (2.0/3.0) + x0;
+        
+        const double ya = (y1-y0) * (1.0/3.0) + y0;
+        const double yb = (y1-y0) * (1.0/2.0) + y0 + sin(60.0*M_PI/180.0)*(x1-x0)/3.0;
+        const double yc = (y1-y0) * (2.0/3.0) + y0;
+        
+        output_snowflake.push_back(Line(Vertex(x0, y0), Vertex(xa, ya)));
+        output_snowflake.push_back(Line(Vertex(xa, ya), Vertex(xb, yb)));
+        output_snowflake.push_back(Line(Vertex(xb, yb), Vertex(xc, yc)));
+        output_snowflake.push_back(Line(Vertex(xc, yc), Vertex(x1, y1)));
+    }
+    
+    return output_snowflake;
+}
+
+void draw_snowflake(const std::vector<Line> &input_snowflake)
+{
+    for (const auto &line : input_snowflake)
+    {
+        sdl::render_line(line.first.first, line.first.second,
+                         line.second.first, line.second.second,
+                         0, 0, 0);
+    }
+}
+
 
 int main()
 {
+    // Init the SDL system.
     sdl::init(800, 600);
     
-    std::cerr << std::setprecision(20);
-    double x=-5.0;
-    double ex = exp(x);
-    double fex = tc_math::fast_exp_64(x);
-    
-    const double yoff = 10.0;
-    const double yscale = 40.0;
-    
-    sdl::render_line(0, yoff, 799, yoff, 255, 255, 255);
-    sdl::render_line(399, 0, 399, 599, 255, 255, 255);
-    
-    for (int i=1; i<800; ++i)
+    // === Create a snowflake ===
+    const int snowflake_depth = 5;
+
+    const int num_sides = 3;
+    std::vector<Line> snowflake;
+
+    for (int i=0; i<num_sides; ++i)
     {
-        const double nx = x + 10.0/800;
-        const double nex = exp(nx);
-        const double nfex = tc_math::fast_exp_64(nx);
+        const int x0 = 250 * cos(-((i+0)*2.0*M_PI)/num_sides) + 400;
+        const int y0 = 250 * sin(-((i+0)*2.0*M_PI)/num_sides) + 300;
+        const int x1 = 250 * cos(-((i+1)*2.0*M_PI)/num_sides) + 400;
+        const int y1 = 250 * sin(-((i+1)*2.0*M_PI)/num_sides) + 300;
         
-        sdl::render_line(i-1, ex*yscale+yoff, i, nex*yscale+yoff, 255, 0, 0);
-        sdl::render_line(i-1, fex*yscale+yoff, i, nfex*yscale+yoff, 0, 255, 0);
-        
-        x=nx;
-        ex=nex;
-        fex=nfex;
+        snowflake.push_back(Line(Vertex(x0, y0), Vertex(x1, y1)));
     }
     
-    sdl::update_display();
+    for (int i=0; i<snowflake_depth; ++i)
+    {
+        snowflake = grow_koch_snowflake(snowflake);
+    }
+    // ==========================
     
+    // === SDL event loop ===
     bool quits = false;
     SDL_Event es;
     
@@ -59,6 +102,14 @@ int main()
                 quits = true;
             }
             
+            sdl::clear_buffer();
+
+            // Draw the snowflake using lines.
+            draw_snowflake(snowflake);
+            
+            // Update the display with the snowflake
+            sdl::update_display();
+
             SDL_Delay(10);
         }
     }
