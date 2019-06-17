@@ -1,6 +1,8 @@
 #ifndef TC_RANDOM_FUNCS_H
 #define TC_RANDOM_FUNCS_H 1
 
+#include "../defines/tc_defines.h"
+
 #include <random>
 
 //==================================//

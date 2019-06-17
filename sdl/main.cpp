@@ -1,14 +1,4 @@
-#define ALWAYS_INLINE inline __attribute__((always_inline))
-#define NEVER_INLINE __attribute__((noinline))
-
-#ifdef TCDEBUG
-#define BBBD(a) if (a) {std::cerr << "BBBoomD " << #a << " @ " << __FILE__ << " line "<< __LINE__ << "!\n"; std::cerr.flush(); exit(-1);}
-#else
-#define BBBD(a)
-#endif
-
-#define DBS(a) std::cerr << #a << " = " << (a) << "  ";
-#define DBN(a) std::cerr << #a << " = " << (a) << std::endl;
+#include "../defines/tc_defines.h"
 
 #include "../math/tc_math.h"
 #include "../sdl/sdl.h"
@@ -21,6 +11,7 @@
 using Vertex = std::pair<int, int>;
 using Line = std::pair<Vertex, Vertex>;
 
+//! Grow the snowflake one level deeper.
 std::vector<Line> grow_koch_snowflake(const std::vector<Line> &input_snowflake)
 {
     std::vector<Line> output_snowflake;
@@ -51,6 +42,7 @@ std::vector<Line> grow_koch_snowflake(const std::vector<Line> &input_snowflake)
     return output_snowflake;
 }
 
+//! Draw the snowflake using lines.
 void draw_snowflake(const std::vector<Line> &input_snowflake)
 {
     for (const auto &line : input_snowflake)
@@ -75,10 +67,10 @@ int main()
 
     for (int i=0; i<num_sides; ++i)
     {
-        const int x0 = 250 * cos(-((i+0)*2.0*M_PI)/num_sides) + 400;
-        const int y0 = 250 * sin(-((i+0)*2.0*M_PI)/num_sides) + 300;
-        const int x1 = 250 * cos(-((i+1)*2.0*M_PI)/num_sides) + 400;
-        const int y1 = 250 * sin(-((i+1)*2.0*M_PI)/num_sides) + 300;
+        const int x0 = 250.0 * cos(-((i+0)*2.0*M_PI)/num_sides) + 400.5;
+        const int y0 = 250.0 * sin(-((i+0)*2.0*M_PI)/num_sides) + 300.5;
+        const int x1 = 250.0 * cos(-((i+1)*2.0*M_PI)/num_sides) + 400.5;
+        const int y1 = 250.0 * sin(-((i+1)*2.0*M_PI)/num_sides) + 300.5;
         
         snowflake.push_back(Line(Vertex(x0, y0), Vertex(x1, y1)));
     }
@@ -95,23 +87,24 @@ int main()
     
     while( !quits )
     {
+        // Clear buffer to white.
+        sdl::clear_buffer();
+        
+        // Draw the snowflake using lines.
+        draw_snowflake(snowflake);
+        
+        // Update the display with the snowflake
+        sdl::update_display();
+        
         while( SDL_PollEvent( &es ) != 0 )
         {
             if( es.type == SDL_QUIT )
             {
                 quits = true;
             }
-            
-            sdl::clear_buffer();
-
-            // Draw the snowflake using lines.
-            draw_snowflake(snowflake);
-            
-            // Update the display with the snowflake
-            sdl::update_display();
-
-            SDL_Delay(10);
         }
+        
+        SDL_Delay(10);
     }
     
     sdl::quit();

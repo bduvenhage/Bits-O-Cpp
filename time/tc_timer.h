@@ -1,6 +1,8 @@
 #ifndef TC_TIMER_H
 #define TC_TIMER_H 1
 
+#include "../defines/tc_defines.h"
+
 #include <cstdint>
 #include <sys/time.h>
 

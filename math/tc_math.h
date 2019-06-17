@@ -1,6 +1,8 @@
 #ifndef TC_MATH_H
 #define TC_MATH_H 1
 
+#include "../defines/tc_defines.h"
+
 #include <cmath>
 #include <stdint.h>
 

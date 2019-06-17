@@ -1,16 +1,6 @@
 // Flow Fire (900 FPS @ 256x256 on Broadwell 2.9GHz i5)
 
-#define ALWAYS_INLINE inline __attribute__((always_inline))
-#define NEVER_INLINE __attribute__((noinline))
-
-#ifdef TCDEBUG
-#define BBBD(a) if (a) {std::cerr << "BBBoomD " << #a << " @ " << __FILE__ << " line "<< __LINE__ << "!\n"; std::cerr.flush(); exit(-1);}
-#else
-#define BBBD(a)
-#endif
-
-#define DBS(a) std::cerr << #a << " = " << (a) << "  ";
-#define DBN(a) std::cerr << #a << " = " << (a) << std::endl;
+#include "../defines/tc_defines.h"
 
 #include "../time/tc_timer.h"
 #include "../random/tc_random_funcs.h"

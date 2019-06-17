@@ -2,19 +2,7 @@
 #include <stdlib.h>
 #include <iostream>
 
-#define TCDEBUG 1
-
-#ifdef TCDEBUG
-#define BBBD(a) if (a) {std::cerr << "BBBoomD " << #a << " @ " << __FILE__ << " line "<< __LINE__ << "!\n"; std::cerr.flush(); exit(-1);}
-#else
-#define BBBD(a)
-#endif
-
-//std::cerr << std::setprecision(10); ???
-#define DBS(a) std::cerr << #a << " = " << (a) << "  ";
-#define DBN(a) std::cerr << #a << " = " << (a) << std::endl;
-
-#define ALWAYS_INLINE inline __attribute__((always_inline))
+#include "../defines/tc_defines.h"
 
 #include "../time/tc_timer.h"
 #include "tc_random_funcs.h"

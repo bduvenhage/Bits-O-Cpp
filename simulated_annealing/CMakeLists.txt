@@ -1,4 +1,4 @@
-PROJECT(sdl_example)
+PROJECT(sa_example)
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
@@ -34,6 +34,7 @@ SET(SRC
   ../defines/tc_defines.h
   ../sdl/sdl.h
   ../math/tc_math.h
+  ../random/tc_random_funcs.h
   main.cpp
 )
 ADD_EXECUTABLE(main ${SRC})

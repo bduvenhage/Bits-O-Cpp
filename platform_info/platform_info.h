@@ -1,6 +1,11 @@
+#ifndef TC_PLATFORM_INFO_H
+#define TC_PLATFORM_INFO_H 1
+
 //=====================//
 //=== Platform info ===//
 //=====================//
+#include "../defines/tc_defines.h"
+
 #include <cpuid.h>
 #include <x86intrin.h>
 #include <iostream>
@@ -116,3 +121,5 @@ namespace platform_info {
         return rdrand_supported & rdseed_supported;
     }
 }
+
+#endif //TC_PLATFORM_INFO_H

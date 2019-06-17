@@ -1,6 +1,8 @@
 //================================//
 //=== Simple DirectMedia Layer ===//
 //================================//
+#include "../defines/tc_defines.h"
+
 #include <SDL2/SDL.h>
 #include <vector>
 
@@ -167,7 +169,7 @@ namespace sdl {
         pixels_[offset] = c;
     }
     
-    void render_dot(const int x, const int y,
+    ALWAYS_INLINE void render_dot(const int x, const int y,
                     const uint8_t r, const uint8_t g, const uint8_t b,
                     const int a = 255)
     {
@@ -176,20 +178,47 @@ namespace sdl {
         SDL_RenderFillRect(renderer_, &fillRect);
     }
     
-    void render_point(const int x, const int y,
+    ALWAYS_INLINE void render_dot(const int x, const int y, const uint32_t c)
+    {
+        const uint8_t r = (c>>16) & 255;
+        const uint8_t g = (c>>8) & 255;
+        const uint8_t b = c & 255;
+        const uint8_t a = 255;
+        render_dot(x, y, r, g, b, a);
+    }
+
+    ALWAYS_INLINE void render_point(const int x, const int y,
                       const uint8_t r, const uint8_t g, const uint8_t b,
                       const int a = 255)
     {
         SDL_SetRenderDrawColor(renderer_, r, g, b, a);
         SDL_RenderDrawPoint(renderer_, x, y);
     }
+
+    ALWAYS_INLINE void render_point(const int x, const int y, const uint32_t c)
+    {
+        const uint8_t r = (c>>16) & 255;
+        const uint8_t g = (c>>8) & 255;
+        const uint8_t b = c & 255;
+        const uint8_t a = 255;
+        render_point(x, y, r, g, b, a);
+    }
     
-    void render_line(const int x0, const int y0, const int x1, const int y1,
-                     const uint8_t r, const uint8_t g, const uint8_t b,
-                     const int a = 255)
+    ALWAYS_INLINE void render_line(const int x0, const int y0, const int x1, const int y1,
+                                   const uint8_t r, const uint8_t g, const uint8_t b,
+                                   const int a = 255)
     {
         SDL_SetRenderDrawColor(renderer_, r, g, b, a);
         SDL_RenderDrawLine(renderer_, x0, y0, x1, y1);
+    }
+    
+    ALWAYS_INLINE void render_line(const int x0, const int y0, const int x1, const int y1, const uint32_t c)
+    {
+        const uint8_t r = (c>>16) & 255;
+        const uint8_t g = (c>>8) & 255;
+        const uint8_t b = c & 255;
+        const uint8_t a = 255;
+        render_line(x0, y0, x1, y1, r, g, b, a);
     }
 }
 
