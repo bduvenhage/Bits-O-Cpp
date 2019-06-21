@@ -1,6 +1,8 @@
 #ifndef TC_DEFINES_H
 #define TC_DEFINES_H 1
 
+#include <iostream>
+
 #define ALWAYS_INLINE inline __attribute__((always_inline))
 #define NEVER_INLINE __attribute__((noinline))
 

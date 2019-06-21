@@ -109,7 +109,7 @@ double test_accuracy(const double x_l, const double x_r,
 
 int main(void)
 {
-    DBN(platform_info::get_cpu())
+    DBN(platform_info::get_cpu_brand_string())
     DBN(platform_info::get_compiler())
     
     const double EXP_TSC_FREQ = 2.89992e+09; // Doesn't really matter when using get_time() aot get_tsc_time().

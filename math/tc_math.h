@@ -4,7 +4,7 @@
 #include "../defines/tc_defines.h"
 
 #include <cmath>
-#include <stdint.h>
+#include <cstdint>
 
 namespace tc_math {
     //! Fast integer log2.

@@ -39,7 +39,7 @@ namespace platform_info {
         return sips;
     }
     
-    std::string get_cpu() {
+    std::string get_cpu_brand_string() {
         // std::cerr << "get_cpu_info(): \n";
         char CPUBrandString[64];
         std::memset(CPUBrandString, 0, sizeof(CPUBrandString));
@@ -54,15 +54,14 @@ namespace platform_info {
             else if (i == 0x80000003) memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
             else if (i == 0x80000004) memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
             
-            if (i == 0x80000016) {
-                std::cerr << "  Processor Base Frequency:  " << CPUInfo[0] << " MHz" << "\n";
-                std::cerr << "  Maximum Frequency:         " << CPUInfo[1] << " MHz" << "\n";
-                std::cerr << "  Bus (Reference) Frequency: " << CPUInfo[2] << " MHz" << "\n";
-                std::cerr.flush();
-            }
+            //if (i == 0x80000016) {
+            //    std::cerr << "  Processor Base Frequency:  " << CPUInfo[0] << " MHz" << "\n";
+            //    std::cerr << "  Maximum Frequency:         " << CPUInfo[1] << " MHz" << "\n";
+            //    std::cerr << "  Bus (Reference) Frequency: " << CPUInfo[2] << " MHz" << "\n";
+            //    std::cerr.flush();
+            //}
         }
         
-        // std::cerr << "  CPUBrandString: " << CPUBrandString << "\n";
         return CPUBrandString;
     }
     
@@ -84,6 +83,28 @@ namespace platform_info {
         asm volatile("cpuid"
                      : "=a" (info->eax), "=b" (info->ebx), "=c" (info->ecx), "=d" (info->edx)
                      : "a" (leaf), "c" (subleaf));
+    }
+    
+    int get_cpu_model()
+    {
+        cpuid_t info;
+        get_cpuid(&info, 1, 0);
+        const uint32_t model_ID = (info.eax >> 4) & 15;
+        const uint32_t ext_model_ID =
+        const uint32_t display_model_ID =
+        
+        return display_model_ID;
+    }
+    
+    int get_cpu_family()
+    {
+        cpuid_t info;
+        get_cpuid(&info, 1, 0);
+        const uint32_t familiy_ID = (info.eax >> 8) & 15;
+        const uint32_t ext_familiy_ID = 
+        const uint32_t display_family_ID =
+        
+        return display_family_ID;
     }
     
     bool is_intel_cpu() {

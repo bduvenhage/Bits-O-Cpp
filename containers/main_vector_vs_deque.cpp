@@ -174,7 +174,7 @@ void test_deque(const int num_iterations)
 
 int main(void)
 {
-    DBN(platform_info::get_cpu())
+    DBN(platform_info::get_cpu_brand_string())
     DBN(platform_info::get_compiler())
 
     const double EXP_TSC_FREQ = 2.89992e+09;

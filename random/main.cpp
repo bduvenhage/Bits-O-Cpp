@@ -14,7 +14,7 @@
 
 int main() // See post at https://bduvenhage.me/rng/2019/04/06/the-intel-drng.html
 {
-    DBN(platform_info::get_cpu())
+    DBN(platform_info::get_cpu_brand_string())
     DBN(platform_info::get_compiler())
     
     const uint32_t rng_seed_ = 0;

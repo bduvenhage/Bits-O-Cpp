@@ -2,23 +2,21 @@
 #define TC_TIMER_H 1
 
 #include "../defines/tc_defines.h"
-
 #include <cstdint>
 #include <sys/time.h>
 
 //====================//
 //=== TC Timer =======//
 //====================//
-/*!Singleton/Static Timer that uses 'timeofday' and the TSC timer. A modern constant_tsc and nonstop_tsc CPU is assumed.
+/*!
+ * Singleton/Static Timer that uses 'timeofday' and the TSC timer. A modern constant_tsc and
+ * nonstop_tsc CPU is assumed.
  * EXAMPLE Usage:
  *   TCTimer::init_timer(2500000000); //Initial guess of performance timer freq.
  *   time = TCTimer::get_time(); //Return the number of seconds since init_timer(). Based on gettimeofday!
- *
  *   ... After some time has passed.
- *
  *   TCTimer::sync_tsc_time(); //Update the initial guess of performance timer freq.
- *   time = TCTimer::get_tsc_time(); //Return the number of seconds since init_timer. Based on TSC! 
- *
+ *   time = TCTimer::get_tsc_time(); //Return the number of seconds since init_timer. Based on TSC!
  *   //TCTimer::get_tsc_time() is much quicker than TCTimer::get_time()!
  */
 class TCTimer {
@@ -26,32 +24,55 @@ public:
     //!Re-init the timers to the current time.
     static void init_timer(double est_clock_freq) noexcept {
         seconds_per_tick_ = 1.0 / est_clock_freq;
-        init_time_ = get_tod_seconds();
-        init_tick_ = get_tsc_tick_p(chip_, core_);
+        init_time_ = _get_tod_seconds();
+        init_tick_ = _get_tsc_ticks_since_epoch_p(chip_, core_);
     }
     
-    //!Update the TSC' secondsPerTick_ based on actual seconds and ticks passed since init. ALSO returns the number of seconds since initTimer() based on gettimeofday!
-    static double sync_tsc_time() noexcept {// - 130000ns on TC's EC2! Local performance = 50ns
-        const double dTime = get_tod_seconds() - init_time_;
-        const uint64_t dTicks = get_tsc_tick_p(chip_, core_) - init_tick_;
+    /*!
+     * Update the TSC' secondsPerTick_ based on actual seconds and ticks passed since init.
+     * \remark Takes 130000ns on TC's EC2! Local performance = 50ns. ALSO returns the number
+     * of seconds since initTimer() based on gettimeofday!
+     */
+    static double sync_tsc_time() noexcept {
+        const double dTime = _get_tod_seconds() - init_time_;
+        const uint64_t dTicks = _get_tsc_ticks_since_epoch_p(chip_, core_) - init_tick_;
         seconds_per_tick_ = dTime / dTicks;
         return dTime;
     }
     
-    //!Return the number of seconds since initTimer(). Based on gettimeofday! - 130000ns on TC's EC2! Local performance = 30ns
-    static ALWAYS_INLINE double get_time() noexcept {return (get_tod_seconds()-init_time_);}
-    
-    /*!Return the number of seconds since initTimer. Based on TSC!
-     @remark The TSC is incremented by the base multiplier once every reference clock. In other words, the same value could be returned multiple times!
+    /*!
+     * Return the number of seconds since initTimer(). Based on gettimeofday!
+     * \remark Takes 130000ns on TC's EC2! Local performance = 30ns
      */
-    static ALWAYS_INLINE double get_tsc_time() noexcept {//Takes 9.4ns on TC's EC2! Local performance = 7.4ns.
-        return int64_t(get_tsc_tick()-init_tick_) * seconds_per_tick_;
+    static ALWAYS_INLINE double get_time() noexcept {return (_get_tod_seconds()-init_time_);}
+    
+    /*!
+     * Return the number of seconds since initTimer. Based on TSC!
+     * \remark Takes 9.4ns on TC's EC2! Local performance = 7.4ns. The TSC is incremented by
+     * the base multiplier once every reference clock. In other words, the same value could
+     * be returned multiple times!
+     */
+    static ALWAYS_INLINE double get_tsc_time() noexcept {
+        return (_get_tsc_ticks_since_epoch() - init_tick_) * seconds_per_tick_;
     }
     
-    /*!Return the number of seconds since initTimer. Based on TSC !
-     @remark The TSC is incremented by the base multiplier once every reference clock. In other words, the same value could be returned multiple times!*/
-    static ALWAYS_INLINE double get_tsc_time_p(int &chip, int &core) noexcept {//Takes ?.?ms on TC's EC2! Local performance = 16ns.
-        return int64_t(get_tsc_tick_p(chip, core)-init_tick_) * seconds_per_tick_;
+    /*!
+     * Return the number of ticks since initTimer. Based on TSC!
+     * \remark The TSC is incremented by the base multiplier once every reference clock. In other words,
+     * the same value could be returned multiple times!
+     */
+    static ALWAYS_INLINE uint64_t get_tsc_ticks() noexcept {
+        return (_get_tsc_ticks_since_epoch() - init_tick_);
+    }
+
+    /*!
+     * Return the number of seconds since initTimer. Based on TSC !
+     * \remark Takes ?.?ms on TC's EC2! Local performance = 16ns. The TSC is incremented by the base
+     * multiplier once every reference clock. In other words, the same value could be returned multiple
+     * times!
+     */
+    static ALWAYS_INLINE double get_tsc_time_p(int &chip, int &core) noexcept {
+        return (_get_tsc_ticks_since_epoch_p(chip, core) - init_tick_) * seconds_per_tick_;
     }
     
     //!Return the estimated number of seconds per clock tick.
@@ -66,40 +87,60 @@ public:
     //!Get the core number on which syncTSCTime() last executed.
     static ALWAYS_INLINE int get_core() noexcept {return core_;}
     
-private:
-    /*!Return the number of clock ticks since some past event - a modern constant_tsc and nonstop_tsc CPU is assumed.
-     @remark The TSC is incremented by the base multiplier once every reference clock. In other words, the same value could be returned multiple times!*/
-    static ALWAYS_INLINE uint64_t get_tsc_tick() noexcept {//OR return __rdtsc();//slightly slower than asm rdtsc?
-        uint64_t timelo, timehi;
-        __asm__ volatile ("rdtsc" : "=a" (timelo), "=d" (timehi));
-        return (timehi << 32) | timelo;
+    /*!
+     * Return the number of clock ticks since some past event - a modern constant_tsc and nonstop_tsc CPU is assumed.
+     * \remark The TSC is incremented by the base multiplier once every reference clock. In other words, the same value
+     * could be returned multiple times! RDTSC reads the 64-bit TSC value into EDX:EAX. The high-order 32 bits of
+     * each of RAX and RDX are cleared. The RDTSC instruction is not a serializing instruction. It does not necessarily
+     * wait until all previous instructions have been executed before reading the counter. Similarly, subsequent
+     * instructions may begin execution before the read operation is performed.
+     */
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_epoch() noexcept {
+        uint32_t countlo, counthi;
+        
+        __asm__ volatile ("rdtsc" : "=a" (countlo), "=d" (counthi));
+        return (uint64_t(counthi) << 32) | countlo;
     }
     
-    //!Return the number of TSC ticks since some past event. Under Linux the additional values returned by rdtscp contains the chip and core that the instruction executed on.
-    static ALWAYS_INLINE uint64_t get_tsc_tick_p(int &chip, int &core) noexcept {
-        uint64_t timelo, timehi;
+    /*!
+     * Return the number of TSC ticks since some past event.
+     * \remark RDTSCP also returns the processor ID (chip and core) that the instruction was executed
+     * on. The RDTSCP instruction is not a serializing instruction. It does wait until all previous
+     * instructions have executed and all previous loads are globally visible, but it does not wait for
+     * previous stores to be globally visible, and subsequent instructions may begin execution before
+     * the read operation is performed.
+     */
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_epoch_p(int &chip, int &core) noexcept {
+        uint32_t countlo, counthi;
         uint32_t chx;
-        __asm__ volatile("rdtscp" : "=a" (timelo), "=d" (timehi), "=c" (chx));
+        
+        // rdtscp approx= lfence;rdtsc
+        __asm__ volatile("rdtscp" : "=a" (countlo), "=d" (counthi), "=c" (chx));
         chip = (chx & 0xFFF000)>>12;
         core = (chx & 0xFFF);
-        return (timehi << 32) | timelo;
+        return (uint64_t(counthi) << 32) | countlo;
     }
     
-    //!Return the number of seconds since some past event. Based on gettimeofday() - 130000ns on TC's EC2! Local performance = 30ns.
-    static ALWAYS_INLINE double get_tod_seconds() noexcept {
+    /*!
+     * Return the number of seconds since some past event. Based on gettimeofday().
+     * \remark Takes 130000ns on TC's EC2! Local performance = 30ns.
+     */
+    static ALWAYS_INLINE double _get_tod_seconds() noexcept {
         struct timeval tv;
         gettimeofday(&tv, nullptr);
         return tv.tv_sec + tv.tv_usec*0.000001;
     }
     
-    static int chip_;//!< Chip number on which sync_tsc_time() last executed.
-    static int core_;//!< Core number on which sync_tsc_time() last executed.
-    
+private:
     static double seconds_per_tick_;//!< Number of seconds per TSC tick. Updated in sync_tsc_time().
     static double init_time_;//!< Reference time in seconds from gettimeofday().
     static uint64_t init_tick_;//!< Reference TSC tick.
+    
+    static int chip_;//!< Chip number on which sync_tsc_time() last executed.
+    static int core_;//!< Core number on which sync_tsc_time() last executed.
 };
 
+// ToDo: Start using C++17 inline static initialisation e.g. static inline double seconds_per_tick_ = 0.0; //at definition.
 int TCTimer::chip_=0;
 int TCTimer::core_=0;
 
