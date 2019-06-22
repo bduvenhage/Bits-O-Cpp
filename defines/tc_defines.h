@@ -12,6 +12,8 @@
 #define BBBD(a)
 #endif
 
+#define DBHEX std::cerr << std::hex << std::uppercase << std::showbase;
+#define DBDEC std::cerr << std::dec << std::nouppercase << std::noshowbase;
 #define DBS(a) std::cerr << #a << " = " << (a) << "  ";
 #define DBN(a) std::cerr << #a << " = " << (a) << std::endl;
 

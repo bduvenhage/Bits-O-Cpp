@@ -9,8 +9,8 @@
 //=== TC Timer =======//
 //====================//
 /*!
- * Singleton/Static Timer that uses 'timeofday' and the TSC timer. A modern constant_tsc and
- * nonstop_tsc CPU is assumed.
+ * Singleton/Static Timer that uses 'timeofday' and the TSC timer. A modern constant_tsc+nonstop_tsc (invariante_tsc)
+ * CPU is assumed.
  * EXAMPLE Usage:
  *   TCTimer::init_timer(2500000000); //Initial guess of performance timer freq.
  *   time = TCTimer::get_time(); //Return the number of seconds since init_timer(). Based on gettimeofday!
@@ -25,7 +25,7 @@ public:
     static void init_timer(double est_clock_freq) noexcept {
         seconds_per_tick_ = 1.0 / est_clock_freq;
         init_time_ = _get_tod_seconds();
-        init_tick_ = _get_tsc_ticks_since_epoch_p(chip_, core_);
+        init_tick_ = _get_tsc_ticks_since_reset_p(chip_, core_);
     }
     
     /*!
@@ -35,7 +35,7 @@ public:
      */
     static double sync_tsc_time() noexcept {
         const double dTime = _get_tod_seconds() - init_time_;
-        const uint64_t dTicks = _get_tsc_ticks_since_epoch_p(chip_, core_) - init_tick_;
+        const uint64_t dTicks = _get_tsc_ticks_since_reset_p(chip_, core_) - init_tick_;
         seconds_per_tick_ = dTime / dTicks;
         return dTime;
     }
@@ -53,16 +53,26 @@ public:
      * be returned multiple times!
      */
     static ALWAYS_INLINE double get_tsc_time() noexcept {
-        return (_get_tsc_ticks_since_epoch() - init_tick_) * seconds_per_tick_;
+        return (_get_tsc_ticks_since_reset() - init_tick_) * seconds_per_tick_;
     }
     
+    //!Return the number of seconds since initTimer. Based on TSC & fenced!
+    static ALWAYS_INLINE double get_tsc_time_fenced() noexcept {
+        return (_get_tsc_ticks_since_reset_fenced() - init_tick_) * seconds_per_tick_;
+    }
+
     /*!
      * Return the number of ticks since initTimer. Based on TSC!
      * \remark The TSC is incremented by the base multiplier once every reference clock. In other words,
      * the same value could be returned multiple times!
      */
     static ALWAYS_INLINE uint64_t get_tsc_ticks() noexcept {
-        return (_get_tsc_ticks_since_epoch() - init_tick_);
+        return (_get_tsc_ticks_since_reset() - init_tick_);
+    }
+
+    //!Return the number of ticks since initTimer. Based on TSC & fenced!
+    static ALWAYS_INLINE uint64_t get_tsc_ticks_fenced() noexcept {
+        return (_get_tsc_ticks_since_reset_fenced() - init_tick_);
     }
 
     /*!
@@ -72,9 +82,14 @@ public:
      * times!
      */
     static ALWAYS_INLINE double get_tsc_time_p(int &chip, int &core) noexcept {
-        return (_get_tsc_ticks_since_epoch_p(chip, core) - init_tick_) * seconds_per_tick_;
+        return (_get_tsc_ticks_since_reset_p(chip, core) - init_tick_) * seconds_per_tick_;
     }
-    
+
+    //!Return the number of seconds since initTimer. Based on TSC & fenced!
+    static ALWAYS_INLINE double get_tsc_time_p_fenced(int &chip, int &core) noexcept {
+        return (_get_tsc_ticks_since_reset_p_fenced(chip, core) - init_tick_) * seconds_per_tick_;
+    }
+
     //!Return the estimated number of seconds per clock tick.
     static ALWAYS_INLINE double get_seconds_per_tick() noexcept {return seconds_per_tick_;}
     
@@ -95,13 +110,25 @@ public:
      * wait until all previous instructions have been executed before reading the counter. Similarly, subsequent
      * instructions may begin execution before the read operation is performed.
      */
-    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_epoch() noexcept {
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_reset() noexcept {
         uint32_t countlo, counthi;
         
-        __asm__ volatile ("rdtsc" : "=a" (countlo), "=d" (counthi));
+        __asm__ volatile ("RDTSC" : "=a" (countlo), "=d" (counthi));
         return (uint64_t(counthi) << 32) | countlo;
     }
     
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_reset_fenced() noexcept {
+        uint32_t countlo, counthi;
+        
+        __asm__ volatile ("lfence;RDTSC;lfence" : "=a" (countlo), "=d" (counthi));
+        // Notes:
+        // If software requires RDTSC to be executed only after all previous instructions have executed and all previous loads are globally visible,1 it can execute LFENCE immediately before RDTSC.
+        // If software requires RDTSC to be executed only after all previous instructions have executed and all previous loads and stores are globally visible, it can execute the sequence MFENCE;LFENCE immediately before RDTSC.
+        // If software requires RDTSC to be executed prior to execution of any subsequent instruction (including any memory accesses), it can execute the sequence LFENCE immediately after RDTSC.
+        
+        return (uint64_t(counthi) << 32) | countlo;
+    }
+
     /*!
      * Return the number of TSC ticks since some past event.
      * \remark RDTSCP also returns the processor ID (chip and core) that the instruction was executed
@@ -110,17 +137,35 @@ public:
      * previous stores to be globally visible, and subsequent instructions may begin execution before
      * the read operation is performed.
      */
-    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_epoch_p(int &chip, int &core) noexcept {
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_reset_p(int &chip, int &core) noexcept {
         uint32_t countlo, counthi;
-        uint32_t chx;
+        uint32_t chx; // Set to processor signature register - set to chip/socket & core ID by recent Linux kernels.
         
-        // rdtscp approx= lfence;rdtsc
-        __asm__ volatile("rdtscp" : "=a" (countlo), "=d" (counthi), "=c" (chx));
+        __asm__ volatile("RDTSCP" : "=a" (countlo), "=d" (counthi), "=c" (chx));
         chip = (chx & 0xFFF000)>>12;
         core = (chx & 0xFFF);
         return (uint64_t(counthi) << 32) | countlo;
     }
     
+    /*!
+     * Return the number of TSC ticks since some past event. This version is fenced.
+     * \remark RDTSCP also returns the processor ID (chip and core) that the instruction was executed
+     * on.
+     */
+    static ALWAYS_INLINE uint64_t _get_tsc_ticks_since_reset_p_fenced(int &chip, int &core) noexcept {
+        uint32_t countlo, counthi;
+        uint32_t chx; //Contents of processor signature register - set to chip/socket & core ID by recent Linux kernels.
+
+        __asm__ volatile("RDTSCP;lfence" : "=a" (countlo), "=d" (counthi), "=c" (chx));
+        // Notes:
+        // If software requires RDTSCP to be executed only after all previous stores are globally visible, it can execute MFENCE immediately before RDTSCP.
+        // If software requires RDTSCP to be executed prior to execution of any subsequent instruction (including any memory accesses), it can execute LFENCE immediately after RDTSCP.
+        
+        chip = (chx & 0xFFF000)>>12;
+        core = (chx & 0xFFF);
+        return (uint64_t(counthi) << 32) | countlo;
+    }
+
     /*!
      * Return the number of seconds since some past event. Based on gettimeofday().
      * \remark Takes 130000ns on TC's EC2! Local performance = 30ns.

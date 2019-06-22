@@ -85,26 +85,33 @@ namespace platform_info {
                      : "a" (leaf), "c" (subleaf));
     }
     
-    int get_cpu_model()
-    {
-        cpuid_t info;
-        get_cpuid(&info, 1, 0);
-        const uint32_t model_ID = (info.eax >> 4) & 15;
-        const uint32_t ext_model_ID =
-        const uint32_t display_model_ID =
-        
-        return display_model_ID;
-    }
-    
-    int get_cpu_family()
+    int get_cpu_display_model()
     {
         cpuid_t info;
         get_cpuid(&info, 1, 0);
         const uint32_t familiy_ID = (info.eax >> 8) & 15;
-        const uint32_t ext_familiy_ID = 
-        const uint32_t display_family_ID =
+        const uint32_t model_ID = (info.eax >> 4) & 15;
+        const uint32_t ext_model_ID = (info.eax >> 16) & 15;
+        const uint32_t display_model_ID = ((familiy_ID==0x06) || (familiy_ID==0x0F)) ? (ext_model_ID << 4) + model_ID : model_ID;
+        
+        return display_model_ID;
+    }
+    
+    int get_cpu_display_family()
+    {
+        cpuid_t info;
+        get_cpuid(&info, 1, 0);
+        const uint32_t familiy_ID = (info.eax >> 8) & 15;
+        const uint32_t ext_familiy_ID = (info.eax >> 20) & 255;
+        const uint32_t display_family_ID = (familiy_ID==0x0F) ? ext_familiy_ID + familiy_ID : familiy_ID;
         
         return display_family_ID;
+    }
+
+    bool is_tsc_invariant() {
+        cpuid_t info;
+        get_cpuid(&info, 0x80000007, 0);
+        return (info.edx & 256);
     }
     
     bool is_intel_cpu() {
