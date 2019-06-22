@@ -5,6 +5,7 @@
 //=== Platform info ===//
 //=====================//
 #include "../defines/tc_defines.h"
+#include "../time/tc_timer.h"
 
 #include <cpuid.h>
 #include <x86intrin.h>
@@ -28,6 +29,7 @@ namespace platform_info {
         uint32_t edx;
     } cpuid_t;
     
+    //! Measure the CPU performance. ASSSUMES that the timer is initialised!
     double get_cpu_sips() {
         const double spin_start_time = TCTimer::get_tsc_time();
         const int spin_count = 16777215;// max 16777215

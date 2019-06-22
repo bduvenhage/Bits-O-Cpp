@@ -34,4 +34,15 @@ SET(SRC
   ../platform_info/platform_info.h
   main.cpp
 )
+
+SET(SRC_ALT
+../defines/tc_defines.h
+../time/tc_timer.h
+../math/tc_math.h
+../random/tc_random_funcs.h
+../platform_info/platform_info.h
+main_alt.cpp
+)
+
 ADD_EXECUTABLE(main ${SRC})
+ADD_EXECUTABLE(main_alt ${SRC_ALT})
