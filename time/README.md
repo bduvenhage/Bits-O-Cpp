@@ -16,3 +16,7 @@ Then run:
 ./main
 ```
 
+To run the C++11 std::chrono::high_resolution_clock example:
+```console
+./main_alt
+```

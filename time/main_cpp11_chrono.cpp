@@ -1,3 +1,5 @@
+//! Example - std::chrono::high_resolution_clock
+
 #include "../defines/tc_defines.h"
 
 #include "../math/tc_math.h"
@@ -19,14 +21,14 @@ int main(void)
     // DBN(platform_info::get_cpu_display_family())
     // DBN(platform_info::get_cpu_display_model())
     DBDEC
-    DBN(platform_info::is_tsc_invariant())
+    // DBN(platform_info::is_tsc_invariant())
     // DBN(platform_info::get_compiler())
     
     DBN(std::chrono::high_resolution_clock::is_steady)
     
     // === Time the timer ===//
     double iteration_time_sum = 0.0;
-    const int num_iterations = 300000000;
+    const int num_iterations = 100000000;
     double sink = 0.0; // bit sink to prevent things from being compiled out.
 
     std::cout << "\nTesting the timer ...";

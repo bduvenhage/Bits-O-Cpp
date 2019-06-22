@@ -35,14 +35,14 @@ SET(SRC
   main.cpp
 )
 
-SET(SRC_ALT
+SET(SRC_cpp11_chrono
 ../defines/tc_defines.h
 ../time/tc_timer.h
 ../math/tc_math.h
 ../random/tc_random_funcs.h
 ../platform_info/platform_info.h
-main_alt.cpp
+main_cpp11_chrono.cpp
 )
 
 ADD_EXECUTABLE(main ${SRC})
-ADD_EXECUTABLE(main_alt ${SRC_ALT})
+ADD_EXECUTABLE(main_cpp11_chrono ${SRC_cpp11_chrono})
