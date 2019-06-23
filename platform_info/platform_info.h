@@ -70,7 +70,7 @@ namespace platform_info {
     std::string get_compiler() {
         char compiler_info[1024];
 #if defined(__clang__) && defined(__APPLE__)
-        sprintf(compiler_info, "apple LLVM (clang) %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
+        sprintf(compiler_info, "Apple LLVM (clang) %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
 #elif defined(__clang__)
         sprintf(compiler_info, "clang %d.%d.%d", __clang_major__, __clang_minor__, __clang_patchlevel__);
 #elif defined(__GNUC__)

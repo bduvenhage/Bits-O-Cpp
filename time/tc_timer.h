@@ -24,7 +24,7 @@ public:
     //!Re-init the timers to the current time.
     static void init_timer(double est_clock_freq) noexcept {
         seconds_per_tick_ = 1.0 / est_clock_freq;
-        init_time_ = _get_tod_seconds();
+        init_time_ = _get_tod_seconds_since_epoch();
         init_tick_ = _get_tsc_ticks_since_reset_p(chip_, core_);
     }
     
@@ -34,7 +34,7 @@ public:
      * of seconds since initTimer() based on gettimeofday!
      */
     static double sync_tsc_time() noexcept {
-        const double dTime = _get_tod_seconds() - init_time_;
+        const double dTime = _get_tod_seconds_since_epoch() - init_time_;
         const uint64_t dTicks = _get_tsc_ticks_since_reset_p(chip_, core_) - init_tick_;
         seconds_per_tick_ = dTime / dTicks;
         return dTime;
@@ -44,7 +44,7 @@ public:
      * Return the number of seconds since initTimer(). Based on gettimeofday!
      * \remark Takes 130000ns on TC's EC2! Local performance = 30ns
      */
-    static ALWAYS_INLINE double get_time() noexcept {return (_get_tod_seconds()-init_time_);}
+    static ALWAYS_INLINE double get_time() noexcept {return (_get_tod_seconds_since_epoch()-init_time_);}
     
     /*!
      * Return the number of seconds since initTimer. Based on TSC!
@@ -170,7 +170,7 @@ public:
      * Return the number of seconds since some past event. Based on gettimeofday().
      * \remark Takes 130000ns on TC's EC2! Local performance = 30ns.
      */
-    static ALWAYS_INLINE double _get_tod_seconds() noexcept {
+    static ALWAYS_INLINE double _get_tod_seconds_since_epoch() noexcept {
         struct timeval tv;
         gettimeofday(&tv, nullptr);
         return tv.tv_sec + tv.tv_usec*0.000001;
