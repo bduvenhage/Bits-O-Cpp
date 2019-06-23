@@ -22,7 +22,7 @@ int main(void)
     DBN(platform_info::get_cpu_display_model())
     DBDEC
     DBN(platform_info::is_tsc_invariant())
-    DBN(platform_info::get_TSC_freq())
+    // DBN(platform_info::get_TSC_freq())
     DBN(std::chrono::high_resolution_clock::is_steady)
     DBN(platform_info::get_compiler())
     
@@ -31,11 +31,11 @@ int main(void)
     // std::cout << "On my laptop high_resolution_clock was steady_clock and the same as CLOCK_UPTIME_RAW!\n";
     // std::cout << "[Intel(R) Core(TM) i5-5287U CPU @ 2.90GHz with Apple LLVM (clang) 10.0.1.]\n";
     timespec clock_getres_tp;
-    clock_getres(CLOCK_UPTIME_RAW, &clock_getres_tp);
+    clock_getres(CLOCK_UPTIME_RAW, &clock_getres_tp); //On linux use CLOCK_MONOTONIC_RAW!
     DBN(clock_getres_tp.tv_nsec)
 
     timespec clock_gettime_tp;
-    clock_gettime(CLOCK_UPTIME_RAW, &clock_gettime_tp);
+    clock_gettime(CLOCK_UPTIME_RAW, &clock_gettime_tp); //On linux use CLOCK_MONOTONIC_RAW!
     auto chrono_steady_now = std::chrono::steady_clock::now();
 
     DBS(clock_gettime_tp.tv_sec)
