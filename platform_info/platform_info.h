@@ -44,7 +44,7 @@ namespace platform_info {
     std::string get_cpu_brand_string() {
         // std::cerr << "get_cpu_info(): \n";
         char CPUBrandString[64];
-        std::memset(CPUBrandString, 0, sizeof(CPUBrandString));
+        memset(CPUBrandString, 0, sizeof(CPUBrandString));
         uint32_t CPUInfo[4] = {0,0,0,0};
         __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
         uint32_t nExIds = CPUInfo[0];
