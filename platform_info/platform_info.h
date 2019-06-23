@@ -10,6 +10,7 @@
 #include <cpuid.h>
 #include <x86intrin.h>
 #include <iostream>
+#icnlude <cstring>
 
 //FTZ & DAZ - in a block scope!:
 //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); //FTZ - Sets denormal results from floating-point calculations to zero.
@@ -44,7 +45,7 @@ namespace platform_info {
     std::string get_cpu_brand_string() {
         // std::cerr << "get_cpu_info(): \n";
         char CPUBrandString[64];
-        memset(CPUBrandString, 0, sizeof(CPUBrandString));
+        std::memset(CPUBrandString, 0, sizeof(CPUBrandString));
         uint32_t CPUInfo[4] = {0,0,0,0};
         __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
         uint32_t nExIds = CPUInfo[0];
@@ -52,9 +53,9 @@ namespace platform_info {
         for (uint32_t i = 0x80000000; i <= nExIds; ++i) {
             __cpuid(i, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
             
-            if (i == 0x80000002) memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
-            else if (i == 0x80000003) memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
-            else if (i == 0x80000004) memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
+            if (i == 0x80000002) std::memcpy(CPUBrandString, CPUInfo, sizeof(CPUInfo));
+            else if (i == 0x80000003) std::memcpy(CPUBrandString + 16, CPUInfo, sizeof(CPUInfo));
+            else if (i == 0x80000004) std::memcpy(CPUBrandString + 32, CPUInfo, sizeof(CPUInfo));
             
             //if (i == 0x80000016) {
             //    std::cerr << "  Processor Base Frequency:  " << CPUInfo[0] << " MHz" << "\n";
