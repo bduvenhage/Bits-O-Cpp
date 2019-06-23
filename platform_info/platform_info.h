@@ -137,9 +137,9 @@ namespace platform_info {
         cpuid_t info;
         get_cpuid(&info, 0, 0);
         
-        if (memcmp((char *) &info.ebx, "Genu", 4) ||
-            memcmp((char *) &info.edx, "ineI", 4) ||
-            memcmp((char *) &info.ecx, "ntel", 4)) {
+        if (std::memcmp((char *) &info.ebx, "Genu", 4) ||
+            std::memcmp((char *) &info.edx, "ineI", 4) ||
+            std::memcmp((char *) &info.ecx, "ntel", 4)) {
             return false;
         } else {
             return true;
