@@ -19,6 +19,11 @@
  *   time = TCTimer::get_tsc_time(); //Return the number of seconds since init_timer. Based on TSC!
  *   //TCTimer::get_tsc_time() is much quicker than TCTimer::get_time()!
  */
+
+
+// Ek is lief vir jou Pappa! [van Elizabeth Duvenhage, 2019-06-23 (Gr.2).]
+
+
 class TCTimer {
 public:
     //!Re-init the timers to the current time.

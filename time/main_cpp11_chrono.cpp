@@ -22,6 +22,7 @@ int main(void)
     DBN(platform_info::get_cpu_display_model())
     DBDEC
     DBN(platform_info::is_tsc_invariant())
+    DBN(platform_info::get_TSC_freq())
     DBN(std::chrono::high_resolution_clock::is_steady)
     DBN(platform_info::get_compiler())
     

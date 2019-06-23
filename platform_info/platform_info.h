@@ -116,6 +116,22 @@ namespace platform_info {
         return (info.edx & 256);
     }
     
+    double get_TSC_freq() {
+        double tsc_freq = 0.0;
+        if (is_tsc_invariant()) {
+            cpuid_t info;
+            get_cpuid(&info, 0x15, 0);
+            if ((info.ebx != 0) && (info.eax != 0))
+            { //It should be possible to calculate the TSC freq from the ART freq.
+                //TSC freq = ART_freq * CPUID.15H:EBX[31:0] / CPUID.15H:EAX[31:0];
+                const double TSC_ART_ratio = info.ebx / double(info.eax);
+                const double ART_freq = double(info.ecx);
+                tsc_freq = ART_freq * TSC_ART_ratio;
+            }
+        }
+        return tsc_freq;
+    }
+    
     bool is_intel_cpu() {
         cpuid_t info;
         get_cpuid(&info, 0, 0);
