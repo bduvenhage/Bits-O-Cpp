@@ -10,7 +10,7 @@
 #include <cpuid.h>
 #include <x86intrin.h>
 #include <iostream>
-#icnlude <cstring>
+#include <cstring>
 
 //FTZ & DAZ - in a block scope!:
 //_MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON); //FTZ - Sets denormal results from floating-point calculations to zero.
