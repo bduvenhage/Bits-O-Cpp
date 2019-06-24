@@ -125,6 +125,9 @@ namespace platform_info {
             if ((info.ebx != 0) && (info.eax != 0))
             { //It should be possible to calculate the TSC freq from the ART freq.
                 //TSC freq = ART_freq * CPUID.15H:EBX[31:0] / CPUID.15H:EAX[31:0];
+                
+                // ToDo: Some of the special case enumerations aren't handled yet!!!
+                
                 const double TSC_ART_ratio = info.ebx / double(info.eax);
                 const double ART_freq = double(info.ecx);
                 tsc_freq = ART_freq * TSC_ART_ratio;
