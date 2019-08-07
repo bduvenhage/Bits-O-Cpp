@@ -1,7 +1,7 @@
 # Fast exp and log2 test
 See post https://bduvenhage.me/performance/machine_learning/2019/06/04/fast-exp.html
 
-To compile check out the repo and do:
+To compile, check out the repo and do:
 
 ```console
 cd Bits-O-Cpp/math

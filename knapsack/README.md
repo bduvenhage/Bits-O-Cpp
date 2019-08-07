@@ -1,7 +1,7 @@
 # Bits-O-Cpp knapsack test
 See post https://bduvenhage.me/algorithms/dynamic%20programming/2019/04/04/the-knapsack-problem.html
 
-To run check out the repo and do:
+To run, check out the repo and do:
 
 ```console
 cd Bits-O-Cpp/knapsack
