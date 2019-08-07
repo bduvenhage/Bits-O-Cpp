@@ -174,8 +174,9 @@ namespace sdl {
                     const int a = 255)
     {
         SDL_SetRenderDrawColor(renderer_, r, g, b, a);
-        SDL_Rect fillRect = {x-2, y-2, 5, 5};
+        SDL_Rect fillRect = {x-1, y-1, 3, 3};
         SDL_RenderFillRect(renderer_, &fillRect);
+        //SDL_RenderDrawPoint(renderer_, x, y);
     }
     
     ALWAYS_INLINE void render_dot(const int x, const int y, const uint32_t c)
